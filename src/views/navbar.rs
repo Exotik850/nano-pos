@@ -1,5 +1,5 @@
-use crate::auth::{logout, AuthContext};
 use crate::Route;
+use crate::auth::{AuthContext, logout};
 use dioxus::prelude::*;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
@@ -38,23 +38,24 @@ pub fn Navbar() -> Element {
                         strong { class: "text-zinc-900 dark:text-zinc-100", "{session.username}" }
                     }
                     button {
-                        class: "rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800",
+                        class: "rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 transition 
+                        hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 cursor-pointer mr-4",
                         r#type: "button",
                         onclick: move |_| async move {
-                            let _ = logout().await;
-                            auth.clear_session();
+                            auth.clear_session().await;
                             navigator.replace(Route::Home {});
                         },
                         "Log out"
                     }
                 } else {
                     Link {
-                        class: "text-sm text-zinc-700 hover:underline dark:text-zinc-300",
+                        class: "text-sm text-zinc-700 transition hover:underline dark:text-zinc-300",
                         to: Route::Login {},
                         "Log in"
                     }
                     Link {
-                        class: "rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
+                        class: "rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium dark:text-zinc-900 transition 
+                        hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
                         to: Route::Signup {},
                         "Sign up"
                     }

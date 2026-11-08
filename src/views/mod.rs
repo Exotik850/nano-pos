@@ -19,3 +19,6 @@ pub use login::{Login, LoginForm};
 
 mod signup;
 pub use signup::{Signup, SignupForm};
+
+mod sidebar;
+pub use sidebar::Sidebar;

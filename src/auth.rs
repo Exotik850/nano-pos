@@ -86,8 +86,9 @@ impl AuthContext {
     }
 
     /// Clear the session after a logout.
-    pub fn clear_session(&mut self) {
+    pub async fn clear_session(&mut self) {
         self.session.set(None);
+        let _ = logout().await;
     }
 }
 

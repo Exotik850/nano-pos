@@ -2,12 +2,12 @@
 
 use std::sync::{Arc, LazyLock};
 
-use argon2::password_hash::{PasswordHasher, PasswordVerifier};
 use argon2::Argon2;
+use argon2::password_hash::{PasswordHasher, PasswordVerifier};
 use chrono::{TimeDelta, Utc};
 use cookie::{Cookie, CookieJar, Key};
-use dioxus::fullstack::http::header::{COOKIE, SET_COOKIE};
 use dioxus::fullstack::http::HeaderValue;
+use dioxus::fullstack::http::header::{COOKIE, SET_COOKIE};
 use dioxus::fullstack::{FullstackContext, HeaderMap};
 use dioxus::logger::tracing::warn;
 use dioxus::prelude::*;
@@ -134,11 +134,10 @@ fn create_session_cookie(user_id: i32) -> String {
         exp: expires.timestamp(),
     };
     let mut jar = CookieJar::new();
-    jar.signed_mut(&session_key())
-        .add(Cookie::new(
-            SESSION_COOKIE,
-            serde_json::to_string(&payload).expect("SessionPayload is serializable"),
-        ));
+    jar.signed_mut(&session_key()).add(Cookie::new(
+        SESSION_COOKIE,
+        serde_json::to_string(&payload).expect("SessionPayload is serializable"),
+    ));
     jar.get(SESSION_COOKIE).unwrap().value().to_string()
 }
 
@@ -154,12 +153,8 @@ fn test_session_cookie_round_trip() {
 fn parse_session_cookie(value: &str) -> Option<i32> {
     let mut jar = CookieJar::new();
     jar.add_original(Cookie::parse(format!("{SESSION_COOKIE}={value}")).ok()?);
-    let payload: SessionPayload = serde_json::from_str(
-        jar.signed(&session_key())
-            .get(SESSION_COOKIE)?
-            .value(),
-    )
-    .ok()?;
+    let payload: SessionPayload =
+        serde_json::from_str(jar.signed(&session_key()).get(SESSION_COOKIE)?.value()).ok()?;
     if Utc::now().timestamp() > payload.exp {
         return None;
     }
@@ -199,10 +194,13 @@ fn clear_session_cookie() {
         "{SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0; \
          Expires=Thu, 01 Jan 1970 00:00:00 GMT"
     );
-    if let Some(ctx) = FullstackContext::current()
-        && let Ok(value) = HeaderValue::from_str(&cookie)
-    {
+    if let Some(ctx) = FullstackContext::current() {
+        let Ok(value) = HeaderValue::from_str(&cookie) else {
+            warn!("Failed to create Set-Cookie header to clear session cookie");
+            return;
+        };
         ctx.add_response_header(SET_COOKIE, value);
+        info!("Cleared session cookie for request");
     }
 }
 

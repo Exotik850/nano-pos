@@ -18,7 +18,7 @@ pub fn Home() -> Element {
                     class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
                     "Welcome back, {session.username}!"
                 }
-                p { class: "text-zinc-500 dark:text-zinc-400", "You are not signed in." }
+                p { class: "text-zinc-500 dark:text-zinc-400", "You are signed in." }
             }
         } else {
             div {
