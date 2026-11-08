@@ -49,7 +49,12 @@ todo!
 todo!
 
 ## Product
-todo!
+- name
+- sku
+- description
+- price
+- image
+- quantity
 
 There are also extensible fields that are managed with the `CustomField` type, which can be attached to any of the above in order to add columns to those types during runtime
 
