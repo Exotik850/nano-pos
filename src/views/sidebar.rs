@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::Route;
+use crate::components::{Button, ButtonVariant};
 
 
 #[component]
@@ -15,8 +16,8 @@ pub fn Sidebar() -> Element {
             div {
               class: "flex flex-col gap-2 border-r border-zinc-200 px-6 py-3 dark:border-zinc-700 items-stretch",
 
-              button {
-                class: "rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 cursor-pointer",
+              Button {
+                variant: ButtonVariant::Secondary,
                 r#type: "button",
                 onclick: move |_| {
                   hidden.set(true);
@@ -31,8 +32,8 @@ pub fn Sidebar() -> Element {
               }
             }
           } else {
-            button {
-              class: "rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 cursor-pointer",
+            Button {
+              variant: ButtonVariant::Secondary,
               r#type: "button",
               onclick: move |_| {
                 hidden.set(false);

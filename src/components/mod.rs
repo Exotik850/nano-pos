@@ -2,4 +2,7 @@
 //! They can be used to defined common UI elements like buttons, forms, and modals. In this template, we define a Hero
 //! component and an Echo component for fullstack apps to be used in our app.
 mod auth_form;
-pub use auth_form::{AuthField, AuthForm, AuthLink};
+pub use auth_form::AuthForm;
+
+mod input;
+pub use input::{AuthField, AuthLink, Button, ButtonLink, ButtonVariant};

@@ -1,5 +1,6 @@
 use crate::Route;
 use crate::auth::AuthContext;
+use crate::components::{ButtonLink, ButtonVariant};
 use dioxus::prelude::*;
 
 /// The Home page component that will be rendered when the current route is `[Route::Home]`
@@ -36,13 +37,12 @@ pub fn Home() -> Element {
                 }
                 div {
                     class: "flex items-center gap-4",
-                    Link {
-                        class: "rounded-lg bg-zinc-900 px-5 py-2.5 font-semibold text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
+                    ButtonLink {
                         to: Route::Signup {},
                         "Sign up"
                     }
-                    Link {
-                        class: "rounded-lg border border-zinc-300 px-5 py-2.5 font-semibold text-zinc-800 transition hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800",
+                    ButtonLink {
+                        variant: ButtonVariant::Secondary,
                         to: Route::Login {},
                         "Log in"
                     }

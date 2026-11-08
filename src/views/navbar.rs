@@ -1,5 +1,6 @@
 use crate::Route;
 use crate::auth::{AuthContext, logout};
+use crate::components::{Button, ButtonLink, ButtonVariant};
 use dioxus::prelude::*;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
@@ -37,9 +38,9 @@ pub fn Navbar() -> Element {
                         "Signed in as "
                         strong { class: "text-zinc-900 dark:text-zinc-100", "{session.username}" }
                     }
-                    button {
-                        class: "rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 transition 
-                        hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800 cursor-pointer mr-4",
+                    Button {
+                        class: "mr-4",
+                        variant: ButtonVariant::Secondary,
                         r#type: "button",
                         onclick: move |_| async move {
                             auth.clear_session().await;
@@ -53,9 +54,8 @@ pub fn Navbar() -> Element {
                         to: Route::Login {},
                         "Log in"
                     }
-                    Link {
-                        class: "rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium dark:text-zinc-900 transition 
-                        hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
+                    ButtonLink {
+                        class: "px-3 py-1.5 text-sm font-medium",
                         to: Route::Signup {},
                         "Sign up"
                     }
