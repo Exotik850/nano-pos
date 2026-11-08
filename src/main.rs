@@ -14,6 +14,26 @@ mod auth;
 #[cfg(feature = "server")]
 mod server;
 
+#[component]
+fn LoadingFallback() -> Element {
+  rsx! {
+    SuspenseBoundary {
+      fallback: |_: SuspenseContext| {
+        rsx! {
+          div {
+            class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",
+            h1 {
+              class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+              "Loading..."
+            }
+          }
+        }
+      },
+      Outlet::<Route> {}
+    }
+  }
+}
+
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
 /// 
@@ -24,6 +44,7 @@ mod server;
 enum Route {
     // AuthProvider is the outermost layout: it provides the reactive AuthContext
     // to every page (including the Navbar) and renders the child route in an Outlet.
+    // #[layout(LoadingFallback)]
     #[layout(AuthProvider)]
         // The layout attribute defines a wrapper for all routes under the layout. Layouts are great for wrapping
         // many routes with a common UI like a navbar.

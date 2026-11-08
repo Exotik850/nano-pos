@@ -1,5 +1,5 @@
-use crate::auth::AuthContext;
 use crate::Route;
+use crate::auth::AuthContext;
 use dioxus::prelude::*;
 
 /// The Home page component that will be rendered when the current route is `[Route::Home]`
@@ -18,7 +18,7 @@ pub fn Home() -> Element {
                     class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
                     "Welcome back, {session.username}!"
                 }
-                p { class: "text-zinc-500 dark:text-zinc-400", "You are signed in." }
+                p { class: "text-zinc-500 dark:text-zinc-400", "You are not signed in." }
             }
         } else {
             div {

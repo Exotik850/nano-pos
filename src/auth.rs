@@ -10,7 +10,10 @@
 use dioxus::{fullstack::Form, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{Route, views::{LoginForm, SignupForm}};
+use crate::{
+    Route,
+    views::{LoginForm, SignupForm},
+};
 
 /// The currently logged-in user, returned by the auth endpoints.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -21,21 +24,20 @@ pub struct Session {
 
 /// Register a new account and start a session for the new user.
 #[server]
-pub async fn signup(
-    form: Form<SignupForm>
-) -> Result<Session, ServerFnError> {
-  let SignupForm { username, email, password } = form.0;
-  crate::server::auth::signup_impl(&username, &email, &password)
+pub async fn signup(form: Form<SignupForm>) -> Result<Session, ServerFnError> {
+    let SignupForm {
+        username,
+        email,
+        password,
+    } = form.0;
+    crate::server::auth::signup_impl(&username, &email, &password)
 }
 
 /// Log in with a username and password, starting a session on success.
 #[server]
-pub async fn login(
-  form: Form<LoginForm>
-) -> Result<Session, ServerFnError> {
-  let LoginForm { username, password } = form.0;
-  crate::server::auth::login_impl(&username, &password)
-    
+pub async fn login(form: Form<LoginForm>) -> Result<Session, ServerFnError> {
+    let LoginForm { username, password } = form.0;
+    crate::server::auth::login_impl(&username, &password)
 }
 
 /// Load the session belonging to the caller's session cookie, if any.
@@ -46,14 +48,14 @@ pub async fn login(
 /// `FullstackContext::extract`.
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn current_user() -> Result<Option<Session>, ServerFnError> {
-  crate::server::auth::current_user_impl(&cookies)  
+    crate::server::auth::current_user_impl(&cookies)
 }
 
 /// Clear the caller's session cookie.
 #[server]
 pub async fn logout() -> Result<(), ServerFnError> {
-  crate::server::auth::logout_impl();
-  Ok(())
+    crate::server::auth::logout_impl();
+    Ok(())
 }
 
 /// Reactive login state shared through the Dioxus context system.
@@ -93,16 +95,19 @@ impl AuthContext {
 /// existing session cookie on first load. Wrap the router with this component.
 #[component]
 pub fn AuthProvider() -> Element {
-    let mut session = use_signal(|| None::<Session>);
+    let session = use_signal(|| None::<Session>);
 
     // On first load, ask the server whether the incoming request carried a
     // valid session cookie. Runs once per launch (no signal reads inside).
-    use_resource(move || async move {
-        match current_user().await {
-            Ok(Some(found)) => session.set(Some(found)),
-            _ => session.set(None),
-        }
-    });
+    use_server_future(move || {
+      let mut session = session;
+      async move {
+        let out = match current_user().await {
+            Ok(Some(found)) => Some(found),
+            _ => None,
+        };
+        session.set(out);
+    }})?.suspend()?;
 
     use_context_provider(|| AuthContext { session });
 
