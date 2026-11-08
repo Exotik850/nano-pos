@@ -1,0 +1,36 @@
+[package]
+name = "nano-pos"
+version = "0.1.0"
+authors = ["Exotik850 <kidkool850@gmail.com>"]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.45"
+diesel = { version = "2.3.14", features = ["postgres", "chrono"], optional = true }
+dioxus = { version = "0.7.1", features = ["router", "fullstack"] }
+dotenvy = "0.15.7"
+serde = { version = "1", features = ["derive"] }
+argon2 = { version = "0.6", optional = true }
+sha2 = { version = "0.11", optional = true }
+base64 = { version = "0.23", optional = true }
+serde_json = { version = "1", optional = true }
+
+[features]
+default = ["web"]
+# The feature that are only required for the web = ["dioxus/web"] build target should be optional and only enabled in the web = ["dioxus/web"] feature
+web = ["dioxus/web"]
+# The feature that are only required for the desktop = ["dioxus/desktop"] build target should be optional and only enabled in the desktop = ["dioxus/desktop"] feature
+desktop = ["dioxus/desktop"]
+# The feature that are only required for the mobile = ["dioxus/mobile"] build target should be optional and only enabled in the mobile = ["dioxus/mobile"] feature
+mobile = ["dioxus/mobile"]
+# The feature that are only required for the server = ["dioxus/server"] build target should be optional and only enabled in the server = ["dioxus/server"] feature
+server = [
+    "dioxus/server",
+    "dep:diesel",
+    "dep:argon2",
+    "dep:sha2",
+    "dep:base64",
+    "dep:serde_json",
+]
