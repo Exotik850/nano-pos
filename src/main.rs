@@ -2,7 +2,7 @@
 // need dioxus
 use dioxus::prelude::*;
 
-use views::{Blog, Home, Login, Navbar, Signup};
+use views::{Home, Login, Navbar, Signup};
 use auth::AuthProvider;
 
 /// Define a components module that contains all shared components for our app.
@@ -53,12 +53,6 @@ enum Route {
         // the component for that route will be rendered. The component name that is rendered defaults to the variant name.
         #[route("/")]
         Home {},
-        // The route attribute can include dynamic parameters that implement [`std::str::FromStr`] and [`std::fmt::Display`] with the `:` syntax.
-        // In this case, id will match any integer like `/blog/123` or `/blog/-456`.
-        #[route("/blog/:id")]
-        // Fields of the route variant will be passed to the component as props. In this case, the blog component must accept
-        // an `id` prop of type `i32`.
-        Blog { id: i32 },
         // The login and signup pages, sharing the same navbar layout.
         #[route("/login")]
         Login {},

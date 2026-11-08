@@ -27,11 +27,6 @@ pub fn Navbar() -> Element {
                 to: Route::Home {},
                 "Home"
             }
-            Link {
-                class: "text-zinc-700 hover:underline dark:text-zinc-300",
-                to: Route::Blog { id: 1 },
-                "Blog"
-            }
 
             // Right-aligned auth controls.
             div {
