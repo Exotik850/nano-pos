@@ -7,10 +7,10 @@
 //! the server-only `crate::server::auth` module, gated behind
 //! `#[cfg(feature = "server")]`.
 
-use dioxus::prelude::*;
+use dioxus::{fullstack::Form, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::Route;
+use crate::{Route, views::{LoginForm, SignupForm}};
 
 /// The currently logged-in user, returned by the auth endpoints.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -22,20 +22,19 @@ pub struct Session {
 /// Register a new account and start a session for the new user.
 #[server]
 pub async fn signup(
-    username: String,
-    email: String,
-    password: String,
+    form: Form<SignupForm>
 ) -> Result<Session, ServerFnError> {
-  crate::server::auth::signup_impl(username, email, password)
+  let SignupForm { username, email, password } = form.0;
+  crate::server::auth::signup_impl(&username, &email, &password)
 }
 
 /// Log in with a username and password, starting a session on success.
 #[server]
 pub async fn login(
-    username: String,
-    password: String,
+  form: Form<LoginForm>
 ) -> Result<Session, ServerFnError> {
-  crate::server::auth::login_impl(username, password)
+  let LoginForm { username, password } = form.0;
+  crate::server::auth::login_impl(&username, &password)
     
 }
 

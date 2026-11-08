@@ -1,15 +1,5 @@
 use dioxus::prelude::*;
 
-/// Extract the text value of a named field from a submitted form event.
-pub fn form_field(evt: &FormEvent, name: &str) -> String {
-    evt.get_first(name)
-        .and_then(|value| match value {
-            FormValue::Text(text) => Some(text),
-            FormValue::File(_) => None,
-        })
-        .unwrap_or_default()
-}
-
 /// A shared, tailwind-styled form shell for the auth pages (login / signup).
 ///
 /// Renders a centered card containing a title, a subtitle, the fields supplied
@@ -42,7 +32,7 @@ pub fn AuthForm(
                     // Stop the browser from performing a native form submission,
                     // which would navigate away and abort the server-fn fetch.
                     evt.prevent_default();
-                    onsubmit.call(evt)
+                    onsubmit.call(evt);
                 },
                 h1 { class: "text-2xl font-bold text-zinc-900 dark:text-zinc-100", "{title}" }
                 p { class: "mt-1 text-sm text-zinc-500 dark:text-zinc-400", "{subtitle}" }
@@ -94,7 +84,12 @@ pub fn AuthField(
 
 /// A small router link used in an [`AuthForm`] footer.
 #[component]
-pub fn AuthLink(to: NavigationTarget, label: String) -> Element {
+pub fn AuthLink(
+  #[props(into)]
+  to: NavigationTarget,
+  #[props(into)]
+  label: String
+) -> Element {
     rsx! {
         Link {
             class: "font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",

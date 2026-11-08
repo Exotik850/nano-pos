@@ -7,15 +7,19 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.45"
-diesel = { version = "2.3.14", features = ["postgres", "chrono"], optional = true }
-dioxus = { version = "0.7.1", features = ["router", "fullstack"] }
-dotenvy = "0.15.7"
-serde = { version = "1", features = ["derive"] }
+chrono = { version = "0.4", default-features = false }
+cookie = { version = "0.18", optional = true, features = ["signed"] }
+diesel = { version = "2.3", optional = true, default-features = false, features = [
+  "postgres",
+  "chrono",
+] }
+dioxus = { version = "0.7", features = ["fullstack", "router", "html"] }
+dotenvy = "0.15"
+serde = { version = "1", default-features = false }
 argon2 = { version = "0.6", optional = true }
-sha2 = { version = "0.11", optional = true }
-base64 = { version = "0.23", optional = true }
-serde_json = { version = "1", optional = true }
+sha2 = { version = "0.11", optional = true, default-features = false }
+serde_json = { version = "1", optional = true, default-features = false }
+dioxus-html = { version = "0.7.10", features = ["serialize"] }
 
 [features]
 default = ["web"]
@@ -27,10 +31,10 @@ desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
 # The feature that are only required for the server = ["dioxus/server"] build target should be optional and only enabled in the server = ["dioxus/server"] feature
 server = [
-    "dioxus/server",
-    "dep:diesel",
-    "dep:argon2",
-    "dep:sha2",
-    "dep:base64",
-    "dep:serde_json",
+  "dioxus/server",
+  "dep:cookie",
+  "dep:diesel",
+  "dep:argon2",
+  "dep:sha2",
+  "dep:serde_json",
 ]

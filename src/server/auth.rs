@@ -1,18 +1,11 @@
-//! Server-only authentication backend: Argon2 password hashing, signed session
-//! cookies, and the Diesel queries that back the signup / login / logout /
-//! current-user endpoints.
-//!
-//! This file lives under the `server` module, which is only compiled into the
-//! server binary. The synchronous, blocking implementations (`signup_impl`,
-//! `login_impl`, `current_user_impl`, `logout_impl`) are called from the
-//! `#[server]` functions defined in the shared `auth` module.
+//! Server-only authentication backend for the shared `#[server]` functions.
 
 use std::sync::{Arc, LazyLock};
 
 use argon2::password_hash::{PasswordHasher, PasswordVerifier};
 use argon2::Argon2;
-use base64::Engine as _;
 use chrono::{TimeDelta, Utc};
+use cookie::{Cookie, CookieJar, Key};
 use dioxus::fullstack::http::header::{COOKIE, SET_COOKIE};
 use dioxus::fullstack::http::HeaderValue;
 use dioxus::fullstack::{FullstackContext, HeaderMap};
@@ -25,6 +18,7 @@ use super::db::establish_connection;
 use super::models::User;
 use super::schema::users;
 use crate::auth::Session;
+use crate::server::models::UserForm;
 
 /// How long a login session stays valid after it is issued.
 const SESSION_TTL_DAYS: i64 = 7;
@@ -100,45 +94,6 @@ fn heap_entropy() -> usize {
     ptr as usize
 }
 
-/// RFC 2104 HMAC-SHA256, implemented on top of the vendored `sha2` crate
-/// (the `hmac` crate is not vendored, so the construction lives here).
-fn hmac_sha256(key: &[u8], message: &[u8]) -> Vec<u8> {
-    const BLOCK: usize = 64;
-    let mut key_block = [0u8; BLOCK];
-    let key_hash = Sha256::digest(key);
-    let key_slice: &[u8] = if key.len() > BLOCK {
-        key_hash.as_slice()
-    } else {
-        key
-    };
-    key_block[..key_slice.len()].copy_from_slice(key_slice);
-
-    let mut ipad = [0x36u8; BLOCK];
-    let mut opad = [0x5cu8; BLOCK];
-    for i in 0..BLOCK {
-        ipad[i] ^= key_block[i];
-        opad[i] ^= key_block[i];
-    }
-
-    let inner = Sha256::digest([ipad.as_slice(), message].concat());
-    Sha256::digest([opad.as_slice(), inner.as_slice()].concat())
-        .as_slice()
-        .to_vec()
-}
-
-/// Constant-time byte comparison so cookie signature checks do not leak
-/// information through timing.
-fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
-    let mut diff = 0u8;
-    for (x, y) in a.iter().zip(b.iter()) {
-        diff |= x ^ y;
-    }
-    diff == 0
-}
-
 /// Hash a plaintext password with Argon2. A random salt is generated per hash
 /// (the `password-hash` crate fills the salt automatically).
 fn hash_password(password: &str) -> Result<String, ServerFnError> {
@@ -155,6 +110,21 @@ fn verify_password(password: &str, hash: &str) -> bool {
         .is_ok()
 }
 
+#[cfg(test)]
+#[test]
+fn test_hash_and_verify() {
+    let password = "correct horse battery staple";
+    let hash = hash_password(password).expect("hashing should succeed");
+    assert!(verify_password(password, &hash));
+    assert!(!verify_password("wrong password", &hash));
+}
+
+fn session_key() -> Key {
+    let mut key = [0u8; 64];
+    key[..SESSION_SECRET.len()].copy_from_slice(SESSION_SECRET.as_slice());
+    Key::from(&key)
+}
+
 /// Build a signed session cookie value for `user_id`, valid for
 /// `SESSION_TTL_DAYS`.
 fn create_session_cookie(user_id: i32) -> String {
@@ -163,28 +133,26 @@ fn create_session_cookie(user_id: i32) -> String {
         uid: user_id,
         exp: expires.timestamp(),
     };
-    let json = serde_json::to_vec(&payload).expect("SessionPayload is serializable");
-    let encoded = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(json);
-    let signature = base64::engine::general_purpose::URL_SAFE_NO_PAD
-        .encode(hmac_sha256(SESSION_SECRET.as_slice(), encoded.as_bytes()));
-    format!("{encoded}.{signature}")
+    let mut jar = CookieJar::new();
+    jar.signed_mut(&session_key())
+        .add(Cookie::new(
+            SESSION_COOKIE,
+            serde_json::to_string(&payload).expect("SessionPayload is serializable"),
+        ));
+    jar.get(SESSION_COOKIE).unwrap().to_string()
 }
 
 /// Validate a session cookie value, returning the user id when the signature
 /// checks out and the session has not expired.
 fn parse_session_cookie(value: &str) -> Option<i32> {
-    let (encoded, signature) = value.split_once('.')?;
-    let signature_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
-        .decode(signature)
-        .ok()?;
-    let expected = hmac_sha256(SESSION_SECRET.as_slice(), encoded.as_bytes());
-    if !constant_time_eq(&signature_bytes, &expected) {
-        return None;
-    }
-    let json = base64::engine::general_purpose::URL_SAFE_NO_PAD
-        .decode(encoded)
-        .ok()?;
-    let payload: SessionPayload = serde_json::from_slice(&json).ok()?;
+    let mut jar = CookieJar::new();
+    jar.add_original(Cookie::parse(format!("{SESSION_COOKIE}={value}")).ok()?);
+    let payload: SessionPayload = serde_json::from_str(
+        jar.signed(&session_key())
+            .get(SESSION_COOKIE)?
+            .value(),
+    )
+    .ok()?;
     if Utc::now().timestamp() > payload.exp {
         return None;
     }
@@ -240,11 +208,12 @@ fn session_from_user(user: &User) -> Session {
 }
 
 /// Register a new user, set the session cookie, and return the new session.
-pub fn signup_impl(username: String, email: String, password: String) -> Result<Session, ServerFnError> {
+pub fn signup_impl(username: &str, email: &str, password: &str) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
-    let username = username.trim().to_string();
-    let email = email.trim().to_string();
+    let username = username.trim();
+    let email = email.trim();
+    let password = password.trim();
     if username.is_empty() || email.is_empty() || password.is_empty() {
         return Err(ServerFnError::new(
             "Username, email, and password are required.",
@@ -260,16 +229,16 @@ pub fn signup_impl(username: String, email: String, password: String) -> Result<
     }
 
     // Hash before touching the DB connection so the lock is only held briefly.
-    let password_hash = hash_password(&password)?;
+    let password_hash = hash_password(password)?;
 
     let user = {
         let mut conn = establish_connection();
         diesel::insert_into(users::table)
-            .values((
-                users::username.eq(&username),
-                users::email.eq(&email),
-                users::password_hash.eq(&password_hash),
-            ))
+            .values(&UserForm {
+                username,
+                password_hash: &password_hash,
+                email,
+            })
             .get_result::<User>(&mut *conn)
             .map_err(|e| {
                 ServerFnError::Response(format!(
@@ -284,10 +253,11 @@ pub fn signup_impl(username: String, email: String, password: String) -> Result<
 }
 
 /// Log a user in by username and password, setting the session cookie.
-pub fn login_impl(username: String, password: String) -> Result<Session, ServerFnError> {
+pub fn login_impl(username: &str, password: &str) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
     let username = username.trim().to_string();
+    let password = password.trim();
     let user = {
         let mut conn = establish_connection();
         users::table

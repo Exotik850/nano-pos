@@ -18,7 +18,7 @@ mod navbar;
 pub use navbar::Navbar;
 
 mod login;
-pub use login::Login;
+pub use login::{Login, LoginForm};
 
 mod signup;
-pub use signup::Signup;
+pub use signup::{Signup, SignupForm};

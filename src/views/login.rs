@@ -1,8 +1,16 @@
+use dioxus::fullstack::Form;
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
 
-use crate::auth::{login, AuthContext};
-use crate::components::{form_field, AuthField, AuthForm, AuthLink};
 use crate::Route;
+use crate::auth::{AuthContext, login};
+use crate::components::{AuthField, AuthForm, AuthLink};
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct LoginForm {
+    pub username: String,
+    pub password: String,
+}
 
 /// The login page. Submits the username/password form to the [`login`] server
 /// function, stores the resulting session in the [`AuthContext`], and routes
@@ -16,22 +24,21 @@ pub fn Login() -> Element {
 
     rsx! {
         AuthForm {
-            title: "Log in".to_string(),
-            subtitle: "Welcome back! Enter your credentials to continue.".to_string(),
-            submit_label: if loading() { "Logging in...".to_string() } else { "Log in".to_string() },
+            title: "Log in",
+            subtitle: "Welcome back! Enter your credentials to continue.",
+            submit_label: if loading() { "Logging in..." } else { "Log in" },
             error: error(),
             footer: rsx! {
-                AuthLink { to: (Route::Signup {}).into(), label: "Create an account" }
+                AuthLink { to: Route::Signup {}, label: "Create an account" }
             },
-            onsubmit: move |evt| async move {
+            onsubmit: move |evt: FormEvent| async move {
                 if loading() {
                     return;
                 }
-                let username = form_field(&evt, "username");
-                let password = form_field(&evt, "password");
+                let form = evt.parsed_values().expect("Failed to parse form values");
                 loading.set(true);
                 error.set(None);
-                match login(username, password).await {
+                match login(Form(form)).await {
                     Ok(session) => {
                         auth.set_session(session);
                         navigator.replace(Route::Home {});
@@ -42,18 +49,18 @@ pub fn Login() -> Element {
             },
 
             AuthField {
-                label: "Username".to_string(),
-                name: "username".to_string(),
-                r#type: "text".to_string(),
-                placeholder: "your_username".to_string(),
-                autocomplete: "username".to_string(),
+                label: "Username",
+                name: "username",
+                r#type: "text",
+                placeholder: "your_username",
+                autocomplete: "username",
             }
             AuthField {
-                label: "Password".to_string(),
-                name: "password".to_string(),
-                r#type: "password".to_string(),
-                placeholder: "••••••••".to_string(),
-                autocomplete: "current-password".to_string(),
+                label: "Password",
+                name: "password",
+                r#type: "password",
+                placeholder: "••••••••",
+                autocomplete: "current-password",
             }
         }
     }

@@ -1,8 +1,17 @@
+use dioxus::fullstack::Form;
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::auth::{signup, AuthContext};
-use crate::components::{form_field, AuthField, AuthForm, AuthLink};
+use crate::components::{AuthField, AuthForm, AuthLink};
 use crate::Route;
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SignupForm {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+}
 
 /// The signup page. Submits the registration form to the [`signup`] server
 /// function, stores the resulting session in the [`AuthContext`], and routes
@@ -16,23 +25,21 @@ pub fn Signup() -> Element {
 
     rsx! {
         AuthForm {
-            title: "Sign up".to_string(),
-            subtitle: "Create an account to get started.".to_string(),
-            submit_label: if loading() { "Creating account...".to_string() } else { "Sign up".to_string() },
+            title: "Sign up",
+            subtitle: "Create an account to get started.",
+            submit_label: if loading() { "Creating account..." } else { "Sign up" },
             error: error(),
             footer: rsx! {
-                AuthLink { to: (Route::Login {}).into(), label: "Already have an account? Log in" }
+                AuthLink { to: Route::Login {}, label: "Already have an account? Log in" }
             },
-            onsubmit: move |evt| async move {
+            onsubmit: move |evt: FormEvent| async move {
                 if loading() {
                     return;
                 }
-                let username = form_field(&evt, "username");
-                let email = form_field(&evt, "email");
-                let password = form_field(&evt, "password");
+                let form = evt.parsed_values().expect("Failed to parse form values");
                 loading.set(true);
                 error.set(None);
-                match signup(username, email, password).await {
+                match signup(Form(form)).await {
                     Ok(session) => {
                         auth.set_session(session);
                         navigator.replace(Route::Home {});
@@ -43,25 +50,25 @@ pub fn Signup() -> Element {
             },
 
             AuthField {
-                label: "Username".to_string(),
-                name: "username".to_string(),
-                r#type: "text".to_string(),
-                placeholder: "your_username".to_string(),
-                autocomplete: "username".to_string(),
+                label: "Username",
+                name: "username",
+                r#type: "text",
+                placeholder: "your_username",
+                autocomplete: "username",
             }
             AuthField {
-                label: "Email".to_string(),
-                name: "email".to_string(),
-                r#type: "email".to_string(),
-                placeholder: "you@example.com".to_string(),
-                autocomplete: "email".to_string(),
+                label: "Email",
+                name: "email",
+                r#type: "email",
+                placeholder: "you@example.com",
+                autocomplete: "email",
             }
             AuthField {
-                label: "Password".to_string(),
-                name: "password".to_string(),
-                r#type: "password".to_string(),
-                placeholder: "At least 8 characters".to_string(),
-                autocomplete: "new-password".to_string(),
+                label: "Password",
+                name: "password",
+                r#type: "password",
+                placeholder: "At least 8 characters",
+                autocomplete: "new-password",
             }
         }
     }
