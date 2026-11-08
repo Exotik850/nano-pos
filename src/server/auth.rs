@@ -139,7 +139,14 @@ fn create_session_cookie(user_id: i32) -> String {
             SESSION_COOKIE,
             serde_json::to_string(&payload).expect("SessionPayload is serializable"),
         ));
-    jar.get(SESSION_COOKIE).unwrap().to_string()
+    jar.get(SESSION_COOKIE).unwrap().value().to_string()
+}
+
+#[cfg(test)]
+#[test]
+fn test_session_cookie_round_trip() {
+    let cookie = create_session_cookie(42);
+    assert_eq!(parse_session_cookie(&cookie), Some(42));
 }
 
 /// Validate a session cookie value, returning the user id when the signature
