@@ -7,19 +7,21 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+dioxus = { version = "0.7", features = ["fullstack", "router", "html"] }
+dioxus-html = { version = "0.7.10", features = ["serialize"] }
 chrono = { version = "0.4", default-features = false }
+dotenvy = "0.15"
+serde = { version = "1", features = ["derive"] }
+
+# Server dependencies
 cookie = { version = "0.18", optional = true, features = ["signed"] }
 diesel = { version = "2.3", optional = true, default-features = false, features = [
   "postgres",
   "chrono",
 ] }
-dioxus = { version = "0.7", features = ["fullstack", "router", "html"] }
-dotenvy = "0.15"
-serde = { version = "1", default-features = false }
 argon2 = { version = "0.6", optional = true }
-sha2 = { version = "0.11", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false }
-dioxus-html = { version = "0.7.10", features = ["serialize"] }
+sha2 = { version = "0.11", optional = true, default-features = false }
 
 [features]
 default = ["web"]
