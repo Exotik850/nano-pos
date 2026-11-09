@@ -13,7 +13,7 @@ pub fn Sidebar() -> Element {
     let mut hidden = use_signal(|| true);
     use_context_provider(|| Hidden(hidden));
 
-    if !auth.session().is_some() {
+    if auth.session().is_none() {
        return rsx! {
           div {
             class: "flex min-h-screen w-full",

@@ -1,5 +1,4 @@
 use dioxus::{fullstack::Form, prelude::*};
-use serde::{Deserialize, Serialize};
 
 use crate::models::{Product, ProductForm};
 

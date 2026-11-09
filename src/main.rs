@@ -2,7 +2,7 @@
 // need dioxus
 use dioxus::prelude::*;
 
-use views::*;
+use views::{Navbar, Home, Login, Signup, IndexProducts, NewProduct, EditProduct};
 use auth::AuthProvider;
 
 use crate::{auth::AuthGaurd, views::Sidebar};
@@ -44,7 +44,7 @@ fn ErrorFallback() -> Element {
     rsx! {
       ErrorBoundary {
         handle_error: |e: ErrorContext| {
-          let err = e.error().map(|s| s.to_string()).unwrap_or_else(|| "Unknown error".to_string());
+          let err = e.error().map_or_else(|| "Unknown error".to_string(), |s| s.to_string());
           rsx! {
             div {
               class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::{
-    components::{input::FormInput, label::Label, textarea::{FormTextarea, Textarea}}, models::{Product, ProductForm},
+    components::{input::FormInput, textarea::FormTextarea}, models::{Product, ProductForm},
 };
 
 use super::Button;
@@ -14,7 +14,7 @@ pub fn ProductFormView(
 ) -> Element {
     let initial_price = initial
         .as_ref()
-        .map(|product| format!("{:.2}", product.price as f64 / 100.0))
+        .map(|product| format!("{:.2}", f64::from(product.price) / 100.0))
         .unwrap_or_default();
     let name = use_signal(|| {
         initial

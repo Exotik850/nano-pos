@@ -11,7 +11,7 @@ use crate::Route;
 #[component]
 fn ProductTableRow(product: Product, ondelete: EventHandler<i32>) -> Element {
   let description = product.description.clone().unwrap_or_else(|| "No description".to_string());
-  let price = format!("${:.2}", product.price as f64 / 100.0);
+  let price = format!("${:.2}", f64::from(product.price) / 100.0);
 
   rsx! {
     TableRow {
