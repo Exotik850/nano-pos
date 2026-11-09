@@ -66,7 +66,7 @@ fn ProductTable(products: Vec<Product>, ondelete: EventHandler<i32>) -> Element 
 #[component]
 pub fn IndexProducts() -> Element {
   let navigator = use_navigator();
-  let products = use_server_future(|| async { list_products().await })?.suspend()?;
+  let products = use_server_future(|| list_products())?.suspend()?;
   let mut error = use_signal(|| None::<String>);
 
   rsx! {

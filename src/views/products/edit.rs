@@ -10,7 +10,7 @@ pub fn EditProduct(id: i32) -> Element {
     let navigator = use_navigator();
     let mut error = use_signal(|| None::<String>);
     let mut loading = use_signal(|| false);
-    let product = use_server_future(move || async move { get_product(id).await })?.suspend()?;
+    let product = use_server_future(move || get_product(id))?.suspend()?;
 
     match product() {
         Ok(Some(product)) => rsx! {
