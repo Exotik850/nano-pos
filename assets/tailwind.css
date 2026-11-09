@@ -1,19 +1,18 @@
-/*! tailwindcss v4.3.5 | MIT License | https://tailwindcss.com */
+/*! tailwindcss v4.1.5 | MIT License | https://tailwindcss.com */
 @layer properties;
 @layer theme, base, components, utilities;
 @layer theme {
   :root, :host {
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-      "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol", "Noto Color Emoji";
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-      "Courier New", monospace;
+    --font-sans: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
     --color-red-50: oklch(97.1% 0.013 17.38);
     --color-red-200: oklch(88.5% 0.062 18.334);
     --color-red-300: oklch(80.8% 0.114 19.571);
     --color-red-700: oklch(50.5% 0.213 27.518);
     --color-red-950: oklch(25.8% 0.092 26.042);
-    --color-zinc-50: oklch(98.5% 0 none);
+    --color-zinc-50: oklch(98.5% 0 0);
     --color-zinc-100: oklch(96.7% 0.001 286.375);
     --color-zinc-200: oklch(92% 0.004 286.32);
     --color-zinc-300: oklch(87.1% 0.006 286.286);
@@ -69,7 +68,7 @@
     line-height: 1.5;
     -webkit-text-size-adjust: 100%;
     tab-size: 4;
-    font-family: var(--default-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji');
     font-feature-settings: var(--default-font-feature-settings, normal);
     font-variation-settings: var(--default-font-variation-settings, normal);
     -webkit-tap-highlight-color: transparent;
@@ -96,7 +95,7 @@
     font-weight: bolder;
   }
   code, kbd, samp, pre {
-    font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace);
     font-feature-settings: var(--default-mono-font-feature-settings, normal);
     font-variation-settings: var(--default-mono-font-variation-settings, normal);
     font-size: 1em;
@@ -121,7 +120,7 @@
     border-color: inherit;
     border-collapse: collapse;
   }
-  :-moz-focusring:where(:not(iframe)) {
+  :-moz-focusring {
     outline: auto;
   }
   progress {
@@ -190,19 +189,16 @@
   ::-webkit-datetime-edit, ::-webkit-datetime-edit-year-field, ::-webkit-datetime-edit-month-field, ::-webkit-datetime-edit-day-field, ::-webkit-datetime-edit-hour-field, ::-webkit-datetime-edit-minute-field, ::-webkit-datetime-edit-second-field, ::-webkit-datetime-edit-millisecond-field, ::-webkit-datetime-edit-meridiem-field {
     padding-block: 0;
   }
-  ::-webkit-calendar-picker-indicator {
-    line-height: 1;
-  }
   :-moz-ui-invalid {
     box-shadow: none;
   }
-  button, input:where([type="button"], [type="reset"], [type="submit"]), ::file-selector-button {
+  button, input:where([type='button'], [type='reset'], [type='submit']), ::file-selector-button {
     appearance: button;
   }
   ::-webkit-inner-spin-button, ::-webkit-outer-spin-button {
     height: auto;
   }
-  [hidden]:where(:not([hidden="until-found"])) {
+  [hidden]:where(:not([hidden='until-found'])) {
     display: none !important;
   }
 }
@@ -247,7 +243,7 @@
     margin-inline: auto;
   }
   .mt-1 {
-    margin-top: var(--spacing);
+    margin-top: calc(var(--spacing) * 1);
   }
   .mt-2 {
     margin-top: calc(var(--spacing) * 2);
@@ -289,7 +285,16 @@
     min-height: 100vh;
   }
   .\!w-0 {
-    width: 0px !important;
+    width: calc(var(--spacing) * 0) !important;
+  }
+  .w-1 {
+    width: calc(var(--spacing) * 1);
+  }
+  .w-1\/2 {
+    width: calc(1/2 * 100%);
+  }
+  .w-1\/4 {
+    width: calc(1/4 * 100%);
   }
   .w-56 {
     width: calc(var(--spacing) * 56);
@@ -313,7 +318,7 @@
     max-width: var(--container-xs);
   }
   .min-w-0 {
-    min-width: 0px;
+    min-width: calc(var(--spacing) * 0);
   }
   .min-w-\[42rem\] {
     min-width: 42rem;
@@ -335,11 +340,11 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .translate-x-0 {
-    --tw-translate-x: 0px;
+    --tw-translate-x: calc(var(--spacing) * 0);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .transform {
-    transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
+    transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
   }
   .cursor-pointer {
     cursor: pointer;
@@ -375,7 +380,7 @@
     justify-content: flex-end;
   }
   .gap-1 {
-    gap: var(--spacing);
+    gap: calc(var(--spacing) * 1);
   }
   .gap-2 {
     gap: calc(var(--spacing) * 2);
@@ -388,6 +393,9 @@
   }
   .gap-8 {
     gap: calc(var(--spacing) * 8);
+  }
+  .self-center {
+    align-self: center;
   }
   .self-start {
     align-self: flex-start;
@@ -458,13 +466,13 @@
     background-color: var(--color-zinc-900);
   }
   .\!p-0 {
-    padding: 0px !important;
+    padding: calc(var(--spacing) * 0) !important;
   }
   .p-8 {
     padding: calc(var(--spacing) * 8);
   }
   .\!px-0 {
-    padding-inline: 0px !important;
+    padding-inline: calc(var(--spacing) * 0) !important;
   }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
@@ -482,7 +490,7 @@
     padding-inline: calc(var(--spacing) * 6);
   }
   .py-1 {
-    padding-block: var(--spacing);
+    padding-block: calc(var(--spacing) * 1);
   }
   .py-1\.5 {
     padding-block: calc(var(--spacing) * 1.5);
@@ -612,17 +620,12 @@
     outline-width: 1px;
   }
   .transition {
-    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, visibility, content-visibility, overlay, pointer-events;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
   .transition-all {
     transition-property: all;
-    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
-    transition-duration: var(--tw-duration, var(--default-transition-duration));
-  }
-  .transition-opacity {
-    transition-property: opacity;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
@@ -638,77 +641,125 @@
     --tw-outline-style: none;
     outline-style: none;
   }
-  @media (hover: hover) {
-    .hover\:bg-zinc-100:hover {
-      background-color: var(--color-zinc-100);
-    }
-    .hover\:bg-zinc-700:hover {
-      background-color: var(--color-zinc-700);
-    }
-    .hover\:underline:hover {
-      text-decoration-line: underline;
+  .hover\:bg-zinc-100 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-zinc-100);
+      }
     }
   }
-  .focus\:border-zinc-500:focus {
-    border-color: var(--color-zinc-500);
+  .hover\:bg-zinc-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-zinc-700);
+      }
+    }
   }
-  @media (prefers-color-scheme: dark) {
-    .dark\:border-zinc-600 {
+  .hover\:underline {
+    &:hover {
+      @media (hover: hover) {
+        text-decoration-line: underline;
+      }
+    }
+  }
+  .focus\:border-zinc-500 {
+    &:focus {
+      border-color: var(--color-zinc-500);
+    }
+  }
+  .dark\:border-zinc-600 {
+    @media (prefers-color-scheme: dark) {
       border-color: var(--color-zinc-600);
     }
-    .dark\:border-zinc-700 {
+  }
+  .dark\:border-zinc-700 {
+    @media (prefers-color-scheme: dark) {
       border-color: var(--color-zinc-700);
     }
-    .dark\:border-zinc-800 {
+  }
+  .dark\:border-zinc-800 {
+    @media (prefers-color-scheme: dark) {
       border-color: var(--color-zinc-800);
     }
-    .dark\:bg-red-950 {
+  }
+  .dark\:bg-red-950 {
+    @media (prefers-color-scheme: dark) {
       background-color: var(--color-red-950);
     }
-    .dark\:bg-zinc-100 {
+  }
+  .dark\:bg-zinc-100 {
+    @media (prefers-color-scheme: dark) {
       background-color: var(--color-zinc-100);
     }
-    .dark\:bg-zinc-800 {
+  }
+  .dark\:bg-zinc-800 {
+    @media (prefers-color-scheme: dark) {
       background-color: var(--color-zinc-800);
     }
-    .dark\:bg-zinc-800\/60 {
+  }
+  .dark\:bg-zinc-800\/60 {
+    @media (prefers-color-scheme: dark) {
       background-color: color-mix(in srgb, oklch(27.4% 0.006 286.033) 60%, transparent);
-    }
-    @supports (color: color-mix(in lab, red, red)) {
-      .dark\:bg-zinc-800\/60 {
+      @supports (color: color-mix(in lab, red, red)) {
         background-color: color-mix(in oklab, var(--color-zinc-800) 60%, transparent);
       }
     }
-    .dark\:bg-zinc-900 {
+  }
+  .dark\:bg-zinc-900 {
+    @media (prefers-color-scheme: dark) {
       background-color: var(--color-zinc-900);
     }
-    .dark\:text-red-200 {
+  }
+  .dark\:text-red-200 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-red-200);
     }
-    .dark\:text-red-300 {
+  }
+  .dark\:text-red-300 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-red-300);
     }
-    .dark\:text-zinc-100 {
+  }
+  .dark\:text-zinc-100 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-zinc-100);
     }
-    .dark\:text-zinc-200 {
+  }
+  .dark\:text-zinc-200 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-zinc-200);
     }
-    .dark\:text-zinc-300 {
+  }
+  .dark\:text-zinc-300 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-zinc-300);
     }
-    .dark\:text-zinc-400 {
+  }
+  .dark\:text-zinc-400 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-zinc-400);
     }
-    .dark\:text-zinc-900 {
+  }
+  .dark\:text-zinc-900 {
+    @media (prefers-color-scheme: dark) {
       color: var(--color-zinc-900);
     }
-    @media (hover: hover) {
-      .dark\:hover\:bg-zinc-300:hover {
-        background-color: var(--color-zinc-300);
+  }
+  .dark\:hover\:bg-zinc-300 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-zinc-300);
+        }
       }
-      .dark\:hover\:bg-zinc-800:hover {
-        background-color: var(--color-zinc-800);
+    }
+  }
+  .dark\:hover\:bg-zinc-800 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-zinc-800);
+        }
       }
     }
   }
@@ -840,7 +891,7 @@
   inherits: false;
 }
 @layer properties {
-  @supports ((-webkit-hyphens: none) and (not (margin-trim: block))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
     *, ::before, ::after, ::backdrop {
       --tw-translate-x: 0;
       --tw-translate-y: 0;

@@ -44,7 +44,7 @@ fn ProductTableRow(product: Product, ondelete: EventHandler<i32>) -> Element {
 }
 
 #[component]
-fn ProductTable(products: Vec<Product>, ondelete: EventHandler<i32>) -> Element {
+fn ProductTable(products: ReadSignal<Vec<Product>>, ondelete: EventHandler<i32>) -> Element {
   rsx! {
     Table {
       TableHead {
@@ -57,7 +57,7 @@ fn ProductTable(products: Vec<Product>, ondelete: EventHandler<i32>) -> Element 
         }
       }
       TableBody {
-        for product in products {
+        for product in products() {
           ProductTableRow { product, ondelete }
         }
       }
@@ -71,6 +71,8 @@ pub fn IndexProducts() -> Element {
   let products = use_server_future(list_products)?.suspend()?;
   let mut error = use_signal(|| None::<String>);
 
+  let products = products()?;
+
   rsx! {
     div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
       div { class: "flex flex-wrap items-end justify-between gap-4",
@@ -83,16 +85,15 @@ pub fn IndexProducts() -> Element {
       if let Some(message) = error() {
         p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
       }
-      match products() {
-        Ok(products) if products.is_empty() => rsx! {
+
+      if products.is_empty() {
           div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
             h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100", "No products yet" }
             p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400", "Add your first product to start tracking inventory." }
           }
-        },
-        Ok(prods) => rsx! {
+      } else {
           ProductTable {
-            products: prods,
+            products: products,
             ondelete: move |product_id| async move {
               error.set(None);
               if let Err(message) = delete_product(product_id).await {
@@ -100,14 +101,9 @@ pub fn IndexProducts() -> Element {
                 error.set(Some(message.to_string()));
               } else {
                 navigator.replace(Route::IndexProducts {});
-                // products().as_mut().unwrap().retain(|p| p.id != product_id);
               }
             },
           }
-        },
-        Err(message) => rsx! {
-          p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
-        },
       }
     }
   }
