@@ -96,19 +96,15 @@ impl AuthContext {
 /// existing session cookie on first load. Wrap the router with this component.
 #[component]
 pub fn AuthProvider() -> Element {
-    let session = use_signal(|| None::<Session>);
-
-    // On first load, ask the server whether the incoming request carried a
-    // valid session cookie. Runs once per launch (no signal reads inside).
-    use_server_future(move || {
-      let mut session = session;
-      async move {
-        let out = match current_user().await {
-            Ok(Some(found)) => Some(found),
-            _ => None,
-        };
-        session.set(out);
-    }})?.suspend()?;
+    // Return the session from the server future so the initial client render
+    // uses the same value as SSR during hydration.
+    let initial_session = use_server_future(|| async {
+        match current_user().await {
+            Ok(session) => session,
+            Err(_) => None,
+        }
+    })?.suspend()?;
+    let session = use_signal(|| initial_session());
 
     use_context_provider(|| AuthContext { session });
 
