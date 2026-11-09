@@ -19,6 +19,7 @@ fn ProductTableRow(product: Product, ondelete: EventHandler<i32>) -> Element {
         div { class: "font-medium text-zinc-900 dark:text-zinc-100", "{product.name}" }
         div { class: "mt-1 max-w-xs truncate text-sm text-zinc-500 dark:text-zinc-400", "{description}" }
       }
+      TableCell { align_end: true, class: "whitespace-nowrap text-zinc-600 dark:text-zinc-300", "{product.sku}" }
       TableCell { align_end: true, class: "whitespace-nowrap font-medium text-zinc-900 dark:text-zinc-100", "{price}" }
       TableCell { align_end: true, class: "whitespace-nowrap text-zinc-600 dark:text-zinc-300", "{product.quantity}" }
       TableCell {
@@ -49,6 +50,7 @@ fn ProductTable(products: Vec<Product>, ondelete: EventHandler<i32>) -> Element 
       TableHead {
         tr {
           TableHeaderCell { "Product" }
+          TableHeaderCell { align_end: true, "SKU" }
           TableHeaderCell { align_end: true, "Price" }
           TableHeaderCell { align_end: true, "In stock" }
           TableHeaderCell { align_end: true, "Actions" }
@@ -66,7 +68,7 @@ fn ProductTable(products: Vec<Product>, ondelete: EventHandler<i32>) -> Element 
 #[component]
 pub fn IndexProducts() -> Element {
   let navigator = use_navigator();
-  let products = use_server_future(|| list_products())?.suspend()?;
+  let products = use_server_future(list_products)?.suspend()?;
   let mut error = use_signal(|| None::<String>);
 
   rsx! {
@@ -88,15 +90,17 @@ pub fn IndexProducts() -> Element {
             p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400", "Add your first product to start tracking inventory." }
           }
         },
-        Ok(products) => rsx! {
+        Ok(prods) => rsx! {
           ProductTable {
-            products,
+            products: prods,
             ondelete: move |product_id| async move {
               error.set(None);
               if let Err(message) = delete_product(product_id).await {
+                warn!("Failed to delete product: {}", message);
                 error.set(Some(message.to_string()));
               } else {
                 navigator.replace(Route::IndexProducts {});
+                // products().as_mut().unwrap().retain(|p| p.id != product_id);
               }
             },
           }

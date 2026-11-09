@@ -2,6 +2,7 @@
 create table product (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  sku VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
   -- in cents
   price INT NOT NULL,

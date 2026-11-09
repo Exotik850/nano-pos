@@ -33,6 +33,7 @@ pub struct UserForm<'a> {
 pub struct Product {
     pub id: i32,
     pub name: String,
+    pub sku: String,
     pub description: Option<String>,
     pub price: i32,
     pub quantity: i32,
@@ -46,6 +47,7 @@ pub struct Product {
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 pub struct ProductForm {
     pub name: String,
+    pub sku: String,
     pub description: Option<String>,
     pub price: i32,
     pub quantity: i32,

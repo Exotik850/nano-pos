@@ -5,6 +5,8 @@ diesel::table! {
         id -> Int4,
         #[max_length = 255]
         name -> Varchar,
+        #[max_length = 255]
+        sku -> Varchar,
         description -> Nullable<Text>,
         price -> Int4,
         quantity -> Int4,

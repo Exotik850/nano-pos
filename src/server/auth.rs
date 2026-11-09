@@ -176,7 +176,7 @@ fn set_session_cookie(user_id: i32) {
     let value = create_session_cookie(user_id);
     let expires = Utc::now() + TimeDelta::days(SESSION_TTL_DAYS);
     let cookie = format!(
-        "{SESSION_COOKIE}={value}; Path=/; HttpOnly; SameSite=Strict; Max-Age={}; Expires={}",
+        "{SESSION_COOKIE}={value}; Path=/; HttpOnly; SameSite=Strict; Max-Age={}; Expires={}; Secure",
         SESSION_TTL_DAYS * 24 * 60 * 60,
         expires.format("%a, %d %b %Y %H:%M:%S GMT")
     );
