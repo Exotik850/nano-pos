@@ -36,6 +36,7 @@ pub fn FormInput(
           value.set(event.value());
         },
         required,
+        value: "{value}",
         ..attributes,
       }
     }

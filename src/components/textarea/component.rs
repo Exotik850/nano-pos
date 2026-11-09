@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::label::Label;
+
 #[css_module("/src/components/textarea/style.css")]
 struct Styles;
 
@@ -77,6 +79,46 @@ pub fn Textarea(
             onmounted: move |e| _ = onmounted.map(|callback| callback(e)),
             ..attributes,
             {children}
+        }
+    }
+}
+
+#[component]
+pub fn FormTextarea(
+    #[props(into)] label: String,
+    #[props(into)] name: String,
+    #[props(default, into)] class: String,
+    #[props(default, into)] required: bool,
+    #[props(default, into)] value: Signal<String>,
+    #[props(default, into)] placeholder: String,
+    #[props(default, into)] autocomplete: String,
+    #[props(default)] variant: TextareaVariant,
+    #[props(extends=GlobalAttributes)]
+    #[props(extends=textarea)]
+    attributes: Vec<Attribute>,
+) -> Element {
+    rsx! {
+        div {
+            class: "flex flex-col gap-1 w-full",
+            Label {
+                html_for: "{name}",
+                "{label}"
+            }
+            textarea {
+                class: "w-full {Styles::dx_textarea} {class}",
+                id: "{name}",
+                name,
+                placeholder,
+                "data-style": variant.class(),
+                "data-slot": "textarea",
+                autocomplete,
+                oninput: move |event: FormEvent| {
+                    value.set(event.value());
+                },
+                required,
+                value: "{value}",
+                ..attributes,
+            }
         }
     }
 }
