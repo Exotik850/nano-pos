@@ -1,11 +1,9 @@
 use crate::Route;
-use crate::auth::{AuthContext, logout};
+use crate::auth::AuthContext;
 use crate::components::{Button, ButtonLink, ButtonVariant};
 use crate::views::sidebar::Hidden;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsRight;
-
-const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
 
 /// The Navbar component that will be rendered on all pages of our app since every page is under the layout.
 ///
@@ -28,8 +26,6 @@ pub fn Navbar() -> Element {
     };
 
     rsx! {
-        document::Link { rel: "stylesheet", href: NAVBAR_CSS }
-
         div {
             class: "flex flex-wrap items-center gap-4 border-b border-zinc-200 px-6 py-3 dark:border-zinc-700
             transition-all duration-300 ease-in-out",
