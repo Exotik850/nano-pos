@@ -2,7 +2,7 @@
 // need dioxus
 use dioxus::prelude::*;
 
-use views::{Home, Login, Navbar, Signup};
+use views::*;
 use auth::AuthProvider;
 
 use crate::views::Sidebar;
@@ -17,6 +17,7 @@ mod views;
 mod server;
 
 mod models;
+mod products;
 
 #[component]
 fn LoadingFallback() -> Element {
@@ -57,6 +58,13 @@ enum Route {
         Login {},
         #[route("/signup")]
         Signup {},
+        #[layout(ProductAuthGuard)]
+        #[route("/products")]
+        IndexProducts {},
+        #[route("/products/new")]
+        NewProduct {},
+        #[route("/products/:id/edit")]
+        EditProduct { id: i32 },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

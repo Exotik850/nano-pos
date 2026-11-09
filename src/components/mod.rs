@@ -6,3 +6,9 @@ pub use auth_form::AuthForm;
 
 mod input;
 pub use input::{AuthField, AuthLink, Button, ButtonLink, ButtonVariant};
+
+mod product;
+pub use product::ProductFormView;
+
+mod table;
+pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};

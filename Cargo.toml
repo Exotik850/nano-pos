@@ -9,7 +9,7 @@ edition = "2024"
 [dependencies]
 dioxus = { version = "0.7", features = ["fullstack", "router", "html"] }
 dioxus-html = { version = "0.7.10", features = ["serialize"] }
-chrono = { version = "0.4", default-features = false }
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
 dotenvy = "0.15"
 serde = { version = "1", features = ["derive"] }
 

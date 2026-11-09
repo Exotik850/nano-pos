@@ -22,3 +22,6 @@ pub use signup::{Signup, SignupForm};
 
 mod sidebar;
 pub use sidebar::Sidebar;
+
+mod products;
+pub use products::{EditProduct, IndexProducts, NewProduct, ProductAuthGuard};
