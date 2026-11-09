@@ -67,11 +67,14 @@ fn ProductTable(products: ReadSignal<Vec<Product>>, ondelete: EventHandler<i32>)
 
 #[component]
 pub fn IndexProducts() -> Element {
-  let navigator = use_navigator();
-  let products = use_server_future(list_products)?.suspend()?;
   let mut error = use_signal(|| None::<String>);
+  let products = use_server_future(list_products)?.suspend()?;
+  let products_ready = products().context("Failed to get products")?;
+  let mut prods = use_signal(|| products_ready.clone());
 
-  let products = products()?;
+  if let Some(message) = error() {
+    return Err(ServerFnError::Response(message).into());
+  }
 
   rsx! {
     div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
@@ -82,25 +85,20 @@ pub fn IndexProducts() -> Element {
         }
         ButtonLink { to: Route::NewProduct {}, "Add product" }
       }
-      if let Some(message) = error() {
-        p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
-      }
-
-      if products.is_empty() {
+      if prods.is_empty() {
           div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
             h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100", "No products yet" }
             p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400", "Add your first product to start tracking inventory." }
           }
       } else {
           ProductTable {
-            products: products,
+            products: prods,
             ondelete: move |product_id| async move {
-              error.set(None);
               if let Err(message) = delete_product(product_id).await {
                 warn!("Failed to delete product: {}", message);
                 error.set(Some(message.to_string()));
               } else {
-                navigator.replace(Route::IndexProducts {});
+                prods.retain(|product| product.id != product_id);
               }
             },
           }
