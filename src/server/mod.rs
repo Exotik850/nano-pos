@@ -1,4 +1,3 @@
-mod schema;
 mod db;
-mod models;
-pub mod auth;
+pub(crate) mod schema;
+pub(crate) mod auth;

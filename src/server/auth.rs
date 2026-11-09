@@ -15,10 +15,9 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use super::db::establish_connection;
-use super::models::User;
-use super::schema::users;
+use crate::models::{User, UserForm};
+use crate::server::schema::users;
 use crate::auth::Session;
-use crate::server::models::UserForm;
 
 /// How long a login session stays valid after it is issued.
 const SESSION_TTL_DAYS: i64 = 7;

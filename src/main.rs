@@ -16,6 +16,8 @@ mod views;
 #[cfg(feature = "server")]
 mod server;
 
+mod models;
+
 #[component]
 fn LoadingFallback() -> Element {
     rsx! {
