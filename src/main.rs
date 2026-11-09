@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 use views::*;
 use auth::AuthProvider;
 
-use crate::views::Sidebar;
+use crate::{auth::AuthGaurd, views::Sidebar};
 
 mod auth;
 /// Define a components module that contains all shared components for our app.
@@ -47,18 +47,17 @@ fn LoadingFallback() -> Element {
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
 enum Route {
-    // #[layout(LoadingFallback)]
     #[layout(AuthProvider)]
     #[layout(Sidebar)]
     #[layout(Navbar)]
+    #[layout(LoadingFallback)]
         #[route("/")]
         Home {},
-        // The login and signup pages, sharing the same navbar layout.
         #[route("/login")]
         Login {},
         #[route("/signup")]
         Signup {},
-        #[layout(ProductAuthGuard)]
+        #[layout(AuthGaurd)]
         #[route("/products")]
         IndexProducts {},
         #[route("/products/new")]

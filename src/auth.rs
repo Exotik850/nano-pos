@@ -11,8 +11,7 @@ use dioxus::{fullstack::Form, prelude::*};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Route,
-    views::{LoginForm, SignupForm},
+    Route, components::{ButtonLink, ButtonVariant}, views::{LoginForm, SignupForm},
 };
 
 /// The currently logged-in user, returned by the auth endpoints.
@@ -109,4 +108,20 @@ pub fn AuthProvider() -> Element {
     use_context_provider(|| AuthContext { session });
 
     rsx! { Outlet::<Route> {} }
+}
+
+#[component]
+pub fn AuthGaurd() -> Element {
+	let auth = use_context::<AuthContext>();
+
+	if auth.session().is_none() {
+		return rsx! {
+			div { class: "flex min-h-[70vh] flex-col items-center justify-center gap-4 px-6 text-center",
+				h1 { class: "text-2xl font-bold text-zinc-900 dark:text-zinc-100", "Sign in required" }
+				ButtonLink { to: Route::Login {}, variant: ButtonVariant::Primary, "Sign in" }
+			}
+		};
+	}
+
+	rsx! { Outlet::<Route> {} }
 }
