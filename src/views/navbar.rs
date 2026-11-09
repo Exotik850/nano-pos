@@ -1,7 +1,9 @@
 use crate::Route;
 use crate::auth::{AuthContext, logout};
 use crate::components::{Button, ButtonLink, ButtonVariant};
+use crate::views::sidebar::Hidden;
 use dioxus::prelude::*;
+use dioxus_icons::lucide::ChevronsRight;
 
 const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
 
@@ -14,15 +16,33 @@ const NAVBAR_CSS: Asset = asset!("/assets/styling/navbar.css");
 #[component]
 pub fn Navbar() -> Element {
     let mut auth = use_context::<AuthContext>();
+    let mut sidebar_hidden = use_context::<Hidden>();
     let navigator = use_navigator();
     let session = auth.session();
+    let signed_in = session.is_some();
+
+    let button_class = if !signed_in || !sidebar_hidden.0() {
+        "invisible !w-0 !p-0 !opacity-0"
+    } else {
+        ""
+    };
 
     rsx! {
         document::Link { rel: "stylesheet", href: NAVBAR_CSS }
 
         div {
-            class: "flex flex-wrap items-center gap-4 border-b border-zinc-200 px-6 py-3 dark:border-zinc-700",
+            class: "flex flex-wrap items-center gap-4 border-b border-zinc-200 px-6 py-3 dark:border-zinc-700
+            transition-all duration-300 ease-in-out",
             id: "navbar",
+
+            Button {
+                class: "px-2 py-1 text-xs opacity-100 {button_class}",
+                variant: ButtonVariant::Secondary,
+                r#type: "button",
+                onclick: move |_| sidebar_hidden.0.set(false),
+                ChevronsRight { size: 16 }
+            }
+
             Link {
                 class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100",
                 to: Route::Home {},
