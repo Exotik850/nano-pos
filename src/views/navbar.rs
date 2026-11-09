@@ -40,7 +40,7 @@ pub fn Navbar() -> Element {
             }
 
             Link {
-                class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100",
+                class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100 {button_class}",
                 to: Route::Home {},
                 "Home"
             }

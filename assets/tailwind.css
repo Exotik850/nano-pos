@@ -260,11 +260,17 @@
   .ml-auto {
     margin-left: auto;
   }
+  .block {
+    display: block;
+  }
   .contents {
     display: contents;
   }
   .flex {
     display: flex;
+  }
+  .grid {
+    display: grid;
   }
   .hidden {
     display: none;
@@ -274,6 +280,9 @@
   }
   .table {
     display: table;
+  }
+  .max-h-\[32rem\] {
+    max-height: 32rem;
   }
   .min-h-32 {
     min-height: calc(var(--spacing) * 32);
@@ -286,6 +295,9 @@
   }
   .\!w-0 {
     width: calc(var(--spacing) * 0) !important;
+  }
+  .w-1 {
+    width: calc(var(--spacing) * 1);
   }
   .w-1\/4 {
     width: calc(1/4 * 100%);
@@ -320,8 +332,14 @@
   .flex-1 {
     flex: 1;
   }
+  .flex-shrink {
+    flex-shrink: 1;
+  }
   .shrink-0 {
     flex-shrink: 0;
+  }
+  .border-collapse {
+    border-collapse: collapse;
   }
   .-translate-x-full {
     --tw-translate-x: -100%;
@@ -339,6 +357,9 @@
   }
   .resize {
     resize: both;
+  }
+  .grid-cols-\[minmax\(0\,2fr\)_minmax\(0\,1fr\)_minmax\(0\,1fr\)_minmax\(0\,0\.8fr\)_auto\] {
+    grid-template-columns: minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,0.8fr) auto;
   }
   .flex-col {
     flex-direction: column;
@@ -382,6 +403,20 @@
   .gap-8 {
     gap: calc(var(--spacing) * 8);
   }
+  .divide-y {
+    :where(& > :not(:last-child)) {
+      --tw-divide-y-reverse: 0;
+      border-bottom-style: var(--tw-border-style);
+      border-top-style: var(--tw-border-style);
+      border-top-width: calc(1px * var(--tw-divide-y-reverse));
+      border-bottom-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
+    }
+  }
+  .divide-zinc-100 {
+    :where(& > :not(:last-child)) {
+      border-color: var(--color-zinc-100);
+    }
+  }
   .self-center {
     align-self: center;
   }
@@ -395,6 +430,9 @@
   }
   .overflow-x-auto {
     overflow-x: auto;
+  }
+  .overflow-y-auto {
+    overflow-y: auto;
   }
   .rounded-2xl {
     border-radius: var(--radius-2xl);
@@ -424,6 +462,10 @@
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
+  }
+  .border-l {
+    border-left-style: var(--tw-border-style);
+    border-left-width: 1px;
   }
   .border-dashed {
     --tw-border-style: dashed;
@@ -652,6 +694,13 @@
       border-color: var(--color-zinc-500);
     }
   }
+  .dark\:divide-zinc-800 {
+    @media (prefers-color-scheme: dark) {
+      :where(& > :not(:last-child)) {
+        border-color: var(--color-zinc-800);
+      }
+    }
+  }
   .dark\:border-zinc-600 {
     @media (prefers-color-scheme: dark) {
       border-color: var(--color-zinc-600);
@@ -784,6 +833,11 @@
   syntax: "*";
   inherits: false;
 }
+@property --tw-divide-y-reverse {
+  syntax: "*";
+  inherits: false;
+  initial-value: 0;
+}
 @property --tw-border-style {
   syntax: "*";
   inherits: false;
@@ -886,6 +940,7 @@
       --tw-rotate-z: initial;
       --tw-skew-x: initial;
       --tw-skew-y: initial;
+      --tw-divide-y-reverse: 0;
       --tw-border-style: solid;
       --tw-font-weight: initial;
       --tw-tracking: initial;
