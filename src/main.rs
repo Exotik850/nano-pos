@@ -34,12 +34,36 @@ fn LoadingFallback() -> Element {
             }
           }
         },
-        div {
-          Outlet::<Route> {}
-        }
+        Outlet::<Route> {}
       }
     }
 }
+
+#[component]
+fn ErrorFallback() -> Element {
+    rsx! {
+      ErrorBoundary {
+        handle_error: |e: ErrorContext| {
+          let err = e.error().map(|s| s.to_string()).unwrap_or_else(|| "Unknown error".to_string());
+          rsx! {
+            div {
+              class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",
+              h1 {
+                class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                "Something went wrong."
+              }
+              h3 {
+                class: "text-lg text-zinc-500 dark:text-zinc-400",
+                "details: {err}"
+              }
+            }
+          }
+        },
+        Outlet::<Route> {}
+      }
+    }
+}
+
 
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
@@ -52,6 +76,7 @@ enum Route {
     #[layout(AuthProvider)]
     #[layout(Sidebar)]
     #[layout(Navbar)]
+    #[layout(ErrorFallback)]
     #[layout(LoadingFallback)]
         #[route("/")]
         Home {},
