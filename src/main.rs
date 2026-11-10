@@ -2,13 +2,13 @@
 // need dioxus
 use dioxus::prelude::*;
 
+use crate::{auth::AuthGaurd, views::Sidebar};
 use auth::AuthProvider;
+use serde::{Deserialize, Serialize};
 use views::{
     EditContact, EditInvoice, EditProduct, Home, IndexContacts, IndexInvoices, IndexProducts,
     Login, Navbar, NewContact, NewInvoice, NewProduct, Signup,
 };
-
-use crate::{auth::AuthGaurd, views::Sidebar};
 
 mod auth;
 /// Define a components module that contains all shared components for our app.
@@ -77,7 +77,7 @@ fn PageTransitions() -> Element {
 /// 
 /// Each variant represents a different URL pattern that can be matched by the router. If that pattern is matched,
 /// the components for that route will be rendered.
-#[derive(Debug, Clone, Routable, PartialEq)]
+#[derive(Debug, Clone, Routable, PartialEq, Serialize, Deserialize, Eq)]
 #[rustfmt::skip]
 enum Route {
     #[layout(AuthProvider)]

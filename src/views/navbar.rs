@@ -19,11 +19,8 @@ pub fn Navbar() -> Element {
     let session = auth.session();
     let signed_in = session.is_some();
 
-    let button_class = if !signed_in || !sidebar_hidden.0() {
-        "invisible !w-0 !p-0 !opacity-0"
-    } else {
-        ""
-    };
+    let invis_sign_in = if !signed_in { "invisible !w-0 !p-0 !opacity-0" } else { "" };
+    let hidden = if !sidebar_hidden.0() { "invisible !w-0 !p-0 !opacity-0" } else { "" };
 
     rsx! {
         div {
@@ -32,7 +29,7 @@ pub fn Navbar() -> Element {
             id: "navbar",
 
             Button {
-                class: "px-2 py-1 text-xs opacity-100 {button_class}",
+                class: "px-2 py-1 text-xs opacity-100 {invis_sign_in} {hidden}",
                 variant: ButtonVariant::Secondary,
                 r#type: "button",
                 onclick: move |_| sidebar_hidden.0.set(false),
@@ -40,12 +37,13 @@ pub fn Navbar() -> Element {
             }
 
             Link {
-                class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100 {button_class}",
+                class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100 {hidden}",
                 to: Route::Home {},
                 "Home"
             }
 
             SearchBar {
+                class: "{invis_sign_in}"
             }
 
             // Right-aligned auth controls.

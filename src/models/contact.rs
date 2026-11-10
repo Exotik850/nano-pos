@@ -40,7 +40,6 @@ pub struct ContactForm {
     pub country: String,
 }
 
-
 #[cfg(feature = "server")]
 impl Contact {
     pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
@@ -101,5 +100,47 @@ impl Contact {
                 .execute(conn)?;
             Ok(deleted)
         })
+    }
+}
+
+#[cfg(feature = "server")]
+mod contact_search {
+    use dioxus::server::inventory;
+
+    use crate::{api::search::SearchResult, server::search::SearchFilter};
+
+    inventory::submit! {
+       SearchFilter::new(
+           |query: &str, conn: &mut diesel::PgConnection| {
+               use crate::server::schema::contact::dsl::*;
+               use diesel::prelude::*;
+
+               let pattern = format!("%{}%", query);
+               contact
+                   .filter(
+                       first_name.ilike(&pattern)
+                           .or(last_name.ilike(&pattern))
+                           .or(email.ilike(&pattern))
+                           .or(phone_number.ilike(&pattern)),
+                   )
+                   .select((
+                       id,
+                       first_name,
+                       last_name,
+                       email,
+                       phone_number
+                   ))
+                   .load::<(i32, String, String, String, String)>(conn)
+                   .map(|results| {
+                       results.into_iter().map(|(idd, first, last, em, phone)| {
+                           SearchResult {
+                               route: crate::Route::EditContact { id: idd },
+                               title: format!("{} {}", first, last),
+                               description: format!("Email: {}, Phone: {}", em, phone),
+                           }
+                       }).collect::<Vec<_>>()
+                   })
+           },
+       )
     }
 }
