@@ -22,11 +22,12 @@ pub fn FormInput(
     div {
       class: "flex flex-col gap-1 w-full",
       Label {
+        class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
         html_for: "{name}",
         "{label}"
       }
       input {
-        class: "w-full {Styles::dx_input} ",
+        class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
         id: "{name}",
         name,
         r#type,
@@ -153,29 +154,6 @@ pub fn ButtonLink(
       class: "inline-block rounded-lg px-5 py-2.5 font-semibold transition {variant_class} {class}",
       to,
       {children},
-    }
-  }
-}
-
-#[component]
-pub fn AuthField(
-  label: String,
-  name: String,
-  #[props(default, into)] r#type: String,
-  #[props(default, into)] placeholder: String,
-  #[props(default, into)] autocomplete: String,
-) -> Element {
-  rsx! {
-    label {
-      class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
-      "{label}"
-      input {
-        class: "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
-        name,
-        r#type,
-        placeholder,
-        autocomplete,
-      }
     }
   }
 }

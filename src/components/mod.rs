@@ -11,5 +11,5 @@ mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
 pub mod label;
 pub mod input;
-pub use input::{AuthField, AuthLink, Button, ButtonLink, ButtonVariant};
+pub use input::{AuthLink, Button, ButtonLink, ButtonVariant, FormInput};
 pub mod textarea;

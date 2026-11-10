@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::auth::{signup, AuthContext};
-use crate::components::{AuthField, AuthForm, AuthLink};
+use crate::components::{AuthForm, AuthLink, FormInput};
 use crate::Route;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -49,24 +49,27 @@ pub fn Signup() -> Element {
                 loading.set(false);
             },
 
-            AuthField {
+            FormInput {
                 label: "Username",
                 name: "username",
                 r#type: "text",
+                required: true,
                 placeholder: "your_username",
                 autocomplete: "username",
             }
-            AuthField {
+            FormInput {
                 label: "Email",
                 name: "email",
                 r#type: "email",
+                required: true,
                 placeholder: "you@example.com",
                 autocomplete: "email",
             }
-            AuthField {
+            FormInput {
                 label: "Password",
                 name: "password",
                 r#type: "password",
+                required: true,
                 placeholder: "At least 8 characters",
                 autocomplete: "new-password",
             }

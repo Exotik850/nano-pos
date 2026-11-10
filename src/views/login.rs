@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Route;
 use crate::auth::{AuthContext, login};
-use crate::components::{AuthField, AuthForm, AuthLink};
+use crate::components::{AuthForm, AuthLink, FormInput};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct LoginForm {
@@ -48,14 +48,14 @@ pub fn Login() -> Element {
                 loading.set(false);
             },
 
-            AuthField {
+            FormInput {
                 label: "Username",
                 name: "username",
                 r#type: "text",
                 placeholder: "your_username",
                 autocomplete: "username",
             }
-            AuthField {
+            FormInput {
                 label: "Password",
                 name: "password",
                 r#type: "password",
