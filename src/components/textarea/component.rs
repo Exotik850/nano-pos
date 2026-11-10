@@ -16,7 +16,7 @@ pub enum TextareaVariant {
 }
 
 impl TextareaVariant {
-    pub fn class(&self) -> &'static str {
+    pub fn class(self) -> &'static str {
         match self {
             TextareaVariant::Default => "default",
             TextareaVariant::Fade => "fade",

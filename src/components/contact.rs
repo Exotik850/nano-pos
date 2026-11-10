@@ -83,7 +83,7 @@ pub fn ContactFormView(
                     last_name: last_name(),
                     phone_number: phone_number(),
                     email: email(),
-                    message: (!message().is_empty()).then(|| message()),
+                    message: (!message().is_empty()).then(&*message),
                     street: street(),
                     city: city(),
                     state: state(),

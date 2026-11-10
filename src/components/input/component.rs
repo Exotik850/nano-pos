@@ -116,7 +116,7 @@ pub fn Button(
   variant: ButtonVariant,
   onclick: Option<EventHandler<MouseEvent>>,
   #[props(extends = Button)]
-  button_props: Vec<Attribute>
+  props: Vec<Attribute>
 ) -> Element {
   let variant_class = match variant {
     ButtonVariant::Primary => "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
@@ -131,7 +131,7 @@ pub fn Button(
           handler.call(evt);
         }
       },
-      ..button_props,
+      ..props,
       {children},
     }
   }
