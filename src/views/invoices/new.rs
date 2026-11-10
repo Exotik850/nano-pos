@@ -47,10 +47,10 @@ pub fn NewInvoice() -> Element {
                     loading.set(true);
                     error.set(None);
                     match create_invoice(
-                            Form(InvoicePayload {
+                            InvoicePayload {
                                 form: draft.form,
                                 products: draft.products,
-                            }),
+                            },
                         )
                         .await
                     {

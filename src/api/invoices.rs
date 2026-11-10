@@ -33,16 +33,21 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
     match Invoice::find(&mut conn, invoice_id) {
         Ok(invoice) => Invoice::products(&mut conn, invoice_id)
             .map(|products| Some(InvoiceDetails { invoice, products }))
-            .map_err(|error| ServerFnError::Response(format!("Could not load invoice products: {error}"))),
+            .map_err(|error| {
+                ServerFnError::Response(format!("Could not load invoice products: {error}"))
+            }),
         Err(diesel::result::Error::NotFound) => Ok(None),
-        Err(error) => Err(ServerFnError::Response(format!("Could not load invoice: {error}"))),
+        Err(error) => Err(ServerFnError::Response(format!(
+            "Could not load invoice: {error}"
+        ))),
     }
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
-pub async fn create_invoice(payload: Form<InvoicePayload>) -> Result<Invoice, ServerFnError> {
+pub async fn create_invoice(
+    InvoicePayload { mut form, products }: InvoicePayload,
+) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
-    let InvoicePayload { mut form, products } = payload.0;
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
     let mut conn = crate::server::db::establish_connection();
@@ -54,13 +59,17 @@ pub async fn create_invoice(payload: Form<InvoicePayload>) -> Result<Invoice, Se
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn update_invoice(
     invoice_id: i32,
-    payload: InvoicePayload,
+    InvoicePayload {
+        mut form,
+        mut products,
+    }: InvoicePayload,
 ) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
-    let InvoicePayload { mut form, mut products } = payload;
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
-    products.iter_mut().for_each(|product| product.invoice_id = invoice_id);
+    products
+        .iter_mut()
+        .for_each(|product| product.invoice_id = invoice_id);
     let mut conn = crate::server::db::establish_connection();
     Invoice::update(&mut conn, invoice_id, &form, &products)
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
@@ -79,8 +88,9 @@ pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
 pub async fn list_invoice_products(invoice_id: i32) -> Result<Vec<InvoiceProduct>, ServerFnError> {
     require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
-    Invoice::products(&mut conn, invoice_id)
-        .map_err(|error| ServerFnError::Response(format!("Could not load invoice products: {error}")))
+    Invoice::products(&mut conn, invoice_id).map_err(|error| {
+        ServerFnError::Response(format!("Could not load invoice products: {error}"))
+    })
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
@@ -95,13 +105,12 @@ pub async fn create_invoice_product(
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
-pub async fn update_invoice_product(
-    form: InvoiceProduct,
-) -> Result<InvoiceProduct, ServerFnError> {
+pub async fn update_invoice_product(form: InvoiceProduct) -> Result<InvoiceProduct, ServerFnError> {
     require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
-    InvoiceProduct::update(&mut conn, form.id, &form)
-        .map_err(|error| ServerFnError::Response(format!("Could not update invoice product: {error}")))
+    InvoiceProduct::update(&mut conn, form.id, &form).map_err(|error| {
+        ServerFnError::Response(format!("Could not update invoice product: {error}"))
+    })
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
@@ -110,19 +119,27 @@ pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::delete(&mut conn, id)
         .map(|_| ())
-        .map_err(|error| ServerFnError::Response(format!("Could not delete invoice product: {error}")))
+        .map_err(|error| {
+            ServerFnError::Response(format!("Could not delete invoice product: {error}"))
+        })
 }
 
 #[cfg(feature = "server")]
 fn validate_invoice(form: &InvoiceForm, products: &[InvoiceProduct]) -> Result<(), ServerFnError> {
     if form.doc_number.trim().is_empty() {
-        return Err(ServerFnError::Response("Document number is required.".into()));
+        return Err(ServerFnError::Response(
+            "Document number is required.".into(),
+        ));
     }
     if form.order_date > form.delivery_date.unwrap_or(NaiveDateTime::MAX) {
-        return Err(ServerFnError::Response("Delivery date cannot be before the order date.".into()));
+        return Err(ServerFnError::Response(
+            "Delivery date cannot be before the order date.".into(),
+        ));
     }
     if products.iter().any(|product| product.quantity <= 0) {
-        return Err(ServerFnError::Response("Invoice quantities must be greater than zero.".into()));
+        return Err(ServerFnError::Response(
+            "Invoice quantities must be greater than zero.".into(),
+        ));
     }
     Ok(())
 }
