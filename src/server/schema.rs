@@ -1,22 +1,6 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    address (id) {
-        id -> Int4,
-        #[max_length = 255]
-        street -> Varchar,
-        #[max_length = 100]
-        city -> Varchar,
-        #[max_length = 100]
-        state -> Varchar,
-        #[max_length = 20]
-        zip_code -> Varchar,
-        #[max_length = 100]
-        country -> Varchar,
-    }
-}
-
-diesel::table! {
     contact (id) {
         id -> Int4,
         #[max_length = 255]
@@ -46,7 +30,7 @@ diesel::table! {
 diesel::table! {
     invoice (id) {
         id -> Int4,
-        customer -> Int4,
+        customer_id -> Int4,
         user_id -> Int4,
         #[max_length = 255]
         doc_number -> Varchar,
@@ -59,13 +43,12 @@ diesel::table! {
 }
 
 diesel::table! {
-    invoice_product (id) {
-        id -> Int4,
-        invoice -> Int4,
-        product -> Int4,
+    invoice_product (invoice_id, product_id) {
+        invoice_id -> Int4,
+        product_id -> Int4,
         quantity -> Int4,
         price -> Nullable<Int4>,
-        tax_rate -> Nullable<Numeric>,
+        tax_rate -> Nullable<Float8>,
         description -> Nullable<Text>,
     }
 }
@@ -99,16 +82,9 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(invoice -> contact (customer));
+diesel::joinable!(invoice -> contact (customer_id));
 diesel::joinable!(invoice -> users (user_id));
-diesel::joinable!(invoice_product -> invoice (invoice));
-diesel::joinable!(invoice_product -> product (product));
+diesel::joinable!(invoice_product -> invoice (invoice_id));
+diesel::joinable!(invoice_product -> product (product_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    address,
-    contact,
-    invoice,
-    invoice_product,
-    product,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(contact, invoice, invoice_product, product, users,);

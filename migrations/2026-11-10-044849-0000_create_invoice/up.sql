@@ -1,7 +1,7 @@
 -- Your SQL goes here
 create table invoice (
   id SERIAL PRIMARY KEY,
-  customer INT NOT NULL REFERENCES contact(id),
+  customer_id INT NOT NULL REFERENCES contact(id),
   user_id INT NOT NULL REFERENCES users(id),
   doc_number VARCHAR(255) NOT NULL,
   description TEXT,
@@ -12,11 +12,11 @@ create table invoice (
 );
 
 create table invoice_product (
-  id SERIAL PRIMARY KEY,
-  invoice INT NOT NULL REFERENCES invoice(id),
-  product INT NOT NULL REFERENCES product(id),
+  invoice_id INT NOT NULL REFERENCES invoice(id),
+  product_id INT NOT NULL REFERENCES product(id),
   quantity INT NOT NULL,
   price INT,
-  tax_rate NUMERIC(5, 2),
-  description TEXT
+  tax_rate DOUBLE PRECISION,
+  description TEXT,
+  primary key (invoice_id, product_id)
 );

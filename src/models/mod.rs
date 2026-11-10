@@ -1,7 +1,9 @@
+mod contact;
+mod invoice;
 mod product;
 mod users;
-mod contact;
 
+pub use contact::{Contact, ContactForm};
+pub use invoice::{Invoice, InvoiceProduct};
 pub use product::{Product, ProductForm};
 pub use users::{User, UserForm};
-pub use contact::{Contact, ContactForm};
