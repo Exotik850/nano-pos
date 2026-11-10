@@ -1,6 +1,32 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    contact (id) {
+        id -> Int4,
+        #[max_length = 255]
+        first_name -> Varchar,
+        #[max_length = 255]
+        last_name -> Varchar,
+        #[max_length = 20]
+        phone_number -> Varchar,
+        #[max_length = 255]
+        email -> Varchar,
+        message -> Nullable<Text>,
+        #[max_length = 255]
+        street -> Varchar,
+        #[max_length = 100]
+        city -> Varchar,
+        #[max_length = 100]
+        state -> Varchar,
+        #[max_length = 20]
+        zip_code -> Varchar,
+        #[max_length = 100]
+        country -> Varchar,
+        created_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     product (id) {
         id -> Int4,
         #[max_length = 255]
@@ -29,4 +55,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(product, users,);
+diesel::allow_tables_to_appear_in_same_query!(contact, product, users,);
