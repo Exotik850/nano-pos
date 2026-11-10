@@ -1,5 +1,6 @@
 use chrono::NaiveDateTime;
 use dioxus::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::components::{input::FormInput, textarea::FormTextarea};
 use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProduct, Product};
@@ -8,7 +9,7 @@ use super::{Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, Tabl
 use crate::Route;
 
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct InvoiceDraft {
     pub form: InvoiceForm,
     pub products: Vec<InvoiceProduct>,

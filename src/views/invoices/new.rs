@@ -1,11 +1,10 @@
-use dioxus::fullstack::Form;
 use dioxus::prelude::*;
 
+use crate::Route;
 use crate::components::{InvoiceDraft, InvoiceFormView};
 use crate::contacts::list_contacts;
-use crate::invoices::{create_invoice, InvoicePayload};
+use crate::invoices::create_invoice;
 use crate::products::list_products;
-use crate::Route;
 
 #[component]
 pub fn NewInvoice() -> Element {
@@ -46,14 +45,7 @@ pub fn NewInvoice() -> Element {
                     };
                     loading.set(true);
                     error.set(None);
-                    match create_invoice(
-                            InvoicePayload {
-                                form: draft.form,
-                                products: draft.products,
-                            },
-                        )
-                        .await
-                    {
+                    match create_invoice(draft).await {
                         Ok(_) => {
                             navigator.replace(Route::IndexInvoices {});
                         }

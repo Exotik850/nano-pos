@@ -1,24 +1,26 @@
 use dioxus::prelude::*;
 
+use crate::Route;
 use crate::components::{InvoiceDraft, InvoiceFormView};
 use crate::contacts::list_contacts;
-use crate::invoices::{get_invoice, update_invoice, InvoicePayload};
+use crate::invoices::{get_invoice, update_invoice};
 use crate::products::list_products;
-use crate::Route;
 
 #[component]
 pub fn EditInvoice(id: i32) -> Element {
     let navigator = use_navigator();
     let mut error = use_signal(|| None::<String>);
     let mut loading = use_signal(|| false);
+    let mut invoice_opt = use_signal(|| None);
     let invoice = use_server_future(move || get_invoice(id))?.suspend()?;
     let contacts = use_server_future(list_contacts)?.suspend()?;
     let products = use_server_future(list_products)?.suspend()?;
+    invoice_opt.set(invoice().context("Failed to get invoice")?);
     let contacts = contacts().context("Failed to get contacts")?;
     let products = products().context("Failed to get products")?;
 
-    match invoice() {
-        Ok(Some(invoice)) => rsx! {
+    match invoice_opt() {
+        Some(invoice) => rsx! {
             div { class: "mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8",
                 div {
                     h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
@@ -48,15 +50,7 @@ pub fn EditInvoice(id: i32) -> Element {
                         };
                         loading.set(true);
                         error.set(None);
-                        match update_invoice(
-                                id,
-                                InvoicePayload {
-                                    form: draft.form,
-                                    products: draft.products,
-                                },
-                            )
-                            .await
-                        {
+                        match update_invoice(id, draft).await {
                             Ok(_) => {
                                 navigator.replace(Route::IndexInvoices {});
                             }
@@ -69,7 +63,7 @@ pub fn EditInvoice(id: i32) -> Element {
                 }
             }
         },
-        Ok(None) => rsx! {
+        None => rsx! {
             div { class: "mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8",
                 h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
                     "Invoice not found"
@@ -78,13 +72,6 @@ pub fn EditInvoice(id: i32) -> Element {
                     to: Route::IndexInvoices {},
                     class: "text-zinc-700 underline dark:text-zinc-300",
                     "Back to invoices"
-                }
-            }
-        },
-        Err(message) => rsx! {
-            div { class: "mx-auto w-full max-w-3xl px-6 py-8",
-                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
-                    "{message}"
                 }
             }
         },

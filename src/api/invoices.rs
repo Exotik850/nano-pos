@@ -2,13 +2,8 @@ use chrono::NaiveDateTime;
 use dioxus::{fullstack::Form, prelude::*};
 use serde::{Deserialize, Serialize};
 
+use crate::components::InvoiceDraft;
 use crate::models::{Invoice, InvoiceDetails, InvoiceForm, InvoiceProduct};
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct InvoicePayload {
-    pub form: InvoiceForm,
-    pub products: Vec<InvoiceProduct>,
-}
 
 #[cfg(feature = "server")]
 fn require_invoice_session(
@@ -45,7 +40,7 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn create_invoice(
-    InvoicePayload { mut form, products }: InvoicePayload,
+    InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
@@ -59,10 +54,10 @@ pub async fn create_invoice(
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn update_invoice(
     invoice_id: i32,
-    InvoicePayload {
+    InvoiceDraft {
         mut form,
         mut products,
-    }: InvoicePayload,
+    }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
