@@ -1,9 +1,7 @@
-use chrono::NaiveDateTime;
 use dioxus::{fullstack::Form, prelude::*};
-use serde::{Deserialize, Serialize};
 
 use crate::components::InvoiceDraft;
-use crate::models::{Invoice, InvoiceDetails, InvoiceForm, InvoiceProduct};
+use crate::models::{Invoice, InvoiceDetails, InvoiceProduct};
 
 #[cfg(feature = "server")]
 fn require_invoice_session(

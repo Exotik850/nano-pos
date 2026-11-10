@@ -8,7 +8,7 @@ use crate::Route;
 #[component]
 fn InvoiceTableRow(invoice: Invoice, contacts: Vec<Contact>, ondelete: EventHandler<i32>) -> Element {
     let customer = contacts.iter().find(|contact| contact.id == invoice.customer_id);
-    let customer_name = customer.map(|contact| format!("{} {}", contact.first_name, contact.last_name)).unwrap_or_else(|| format!("Customer #{}", invoice.customer_id));
+    let customer_name = customer.map_or_else(|| format!("Customer #{}", invoice.customer_id), |contact| format!("{} {}", contact.first_name, contact.last_name));
     let order_date = invoice.order_date.format("%Y-%m-%d").to_string();
     rsx! {
         TableRow {

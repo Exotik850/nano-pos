@@ -30,7 +30,7 @@ pub fn InvoiceFormView(
     let mut customer_id = use_signal(|| initial.as_ref().map(|value| value.invoice.customer_id.to_string()).unwrap_or_default());
     let doc_number = use_signal(|| initial.as_ref().map(|value| value.invoice.doc_number.clone()).unwrap_or_default());
     let description = use_signal(|| initial.as_ref().and_then(|value| value.invoice.description.clone()).unwrap_or_default());
-    let order_date = use_signal(|| initial.as_ref().map(|value| datetime_input(value.invoice.order_date)).unwrap_or_else(|| "2026-01-01T00:00".to_string()));
+    let order_date = use_signal(|| initial.as_ref().map_or_else(|| "2026-01-01T00:00".to_string(), |value| datetime_input(value.invoice.order_date)));
     let delivery_date = use_signal(|| initial.as_ref().and_then(|value| value.invoice.delivery_date.map(datetime_input)).unwrap_or_default());
     let mut lines = use_signal(|| initial.as_ref().map(|value| value.products.clone()).unwrap_or_default());
     let mut selected_product = use_signal(String::new);
@@ -203,7 +203,7 @@ pub fn InvoiceFormView(
                                     tax_rate: (!tax_rate().is_empty())
                                         .then(|| tax_rate().parse::<f64>().ok())
                                         .flatten(),
-                                    description: (!line_description().is_empty()).then(|| line_description()),
+                                    description: (!line_description().is_empty()).then(&*line_description),
                                 });
                             selected_product.set(String::new());
                             quantity.set("1".to_string());
@@ -225,13 +225,9 @@ pub fn InvoiceFormView(
                         for line in lines() {
                             {
                                 let product = products.iter().find(|product| product.id == line.product_id);
-                                let product_name = product
-                                    .map(|value| value.name.clone())
-                                    .unwrap_or_else(|| format!("Product #{}", line.product_id));
+                                let product_name = product.map_or_else(|| format!("Product #{}", line.product_id), |value| value.name.clone());
                                 let line_price = line
-                                    .price
-                                    .map(|value| format!("${:.2}", f64::from(value) / 100.0))
-                                    .unwrap_or_else(|| "-".to_string());
+                                    .price.map_or_else(|| "-".to_string(), |value| format!("${:.2}", f64::from(value) / 100.0));
                                 rsx! {
                                     TableRow {
                                         TableCell { class: "text-zinc-700 dark:text-zinc-300", "{product_name}" }

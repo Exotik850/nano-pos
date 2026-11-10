@@ -46,7 +46,6 @@ pub fn Navbar() -> Element {
             }
 
             SearchBar {
-              
             }
 
             // Right-aligned auth controls.
