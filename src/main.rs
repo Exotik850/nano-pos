@@ -17,8 +17,9 @@ mod views;
 mod server;
 
 pub mod models;
-mod products;
-mod contacts;
+
+mod api;
+pub use api::{contacts, products};
 
 #[component]
 fn LoadingFallback() -> Element {
