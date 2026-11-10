@@ -1,14 +1,26 @@
-use dioxus::prelude::*;
-use crate::components::{Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
+use crate::Route;
+use crate::components::{
+    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
+    TableRow,
+};
 use crate::contacts::list_contacts;
 use crate::invoices::{delete_invoice, list_invoices};
 use crate::models::{Contact, Invoice};
-use crate::Route;
+use dioxus::prelude::*;
 
 #[component]
-fn InvoiceTableRow(invoice: Invoice, contacts: Vec<Contact>, ondelete: EventHandler<i32>) -> Element {
-    let customer = contacts.iter().find(|contact| contact.id == invoice.customer_id);
-    let customer_name = customer.map_or_else(|| format!("Customer #{}", invoice.customer_id), |contact| format!("{} {}", contact.first_name, contact.last_name));
+fn InvoiceTableRow(
+    invoice: Invoice,
+    contacts: Vec<Contact>,
+    ondelete: EventHandler<i32>,
+) -> Element {
+    let customer = contacts
+        .iter()
+        .find(|contact| contact.id == invoice.customer_id);
+    let customer_name = customer.map_or_else(
+        || format!("Customer #{}", invoice.customer_id),
+        |contact| format!("{} {}", contact.first_name, contact.last_name),
+    );
     let order_date = invoice.order_date.format("%Y-%m-%d").to_string();
     rsx! {
         TableRow {

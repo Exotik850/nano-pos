@@ -3,8 +3,6 @@ use std::sync::{Arc, LazyLock, Mutex};
 use diesel::{Connection, PgConnection};
 use dioxus::logger::tracing::warn;
 
-
-
 // thread_local! {
 //   pub static DB: PgConnection = {
 //     if let Err(e) = dotenvy::dotenv() {
@@ -26,5 +24,6 @@ pub static DB: LazyLock<Arc<Mutex<PgConnection>>> = LazyLock::new(|| {
 });
 
 pub(crate) fn establish_connection<'a>() -> std::sync::MutexGuard<'a, PgConnection> {
-  DB.lock().expect("Failed to acquire database connection lock")
+    DB.lock()
+        .expect("Failed to acquire database connection lock")
 }

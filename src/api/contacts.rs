@@ -3,9 +3,7 @@ use dioxus::{fullstack::Form, prelude::*};
 use crate::models::{Contact, ContactForm};
 
 #[cfg(feature = "server")]
-fn require_contact_session(
-    headers: &dioxus::fullstack::HeaderMap,
-) -> Result<(), ServerFnError> {
+fn require_contact_session(headers: &dioxus::fullstack::HeaderMap) -> Result<(), ServerFnError> {
     crate::server::auth::current_user_impl(headers)?
         .map(|_| ())
         .ok_or_else(|| ServerFnError::Response("You must be signed in to manage contacts.".into()))
@@ -26,7 +24,9 @@ pub async fn get_contact(contact_id: i32) -> Result<Option<Contact>, ServerFnErr
     match Contact::find(&mut conn, contact_id) {
         Ok(contact) => Ok(Some(contact)),
         Err(diesel::result::Error::NotFound) => Ok(None),
-        Err(error) => Err(ServerFnError::Response(format!("Could not load contact: {error}"))),
+        Err(error) => Err(ServerFnError::Response(format!(
+            "Could not load contact: {error}"
+        ))),
     }
 }
 
@@ -39,10 +39,7 @@ pub async fn create_contact(form: Form<ContactForm>) -> Result<Contact, ServerFn
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
-pub async fn update_contact(
-    contact_id: i32,
-    form: ContactForm,
-) -> Result<Contact, ServerFnError> {
+pub async fn update_contact(contact_id: i32, form: ContactForm) -> Result<Contact, ServerFnError> {
     require_contact_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Contact::update(&mut conn, contact_id, &form)

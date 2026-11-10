@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 
+use crate::Route;
 use crate::components::ContactFormView;
 use crate::contacts::{get_contact, update_contact};
 use crate::models::ContactForm;
-use crate::Route;
 
 #[component]
 pub fn EditContact(id: i32) -> Element {

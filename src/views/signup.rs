@@ -2,9 +2,9 @@ use dioxus::fullstack::Form;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::auth::{signup, AuthContext};
-use crate::components::{AuthForm, AuthLink, FormInput};
 use crate::Route;
+use crate::auth::{AuthContext, signup};
+use crate::components::{AuthForm, AuthLink, FormInput};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SignupForm {

@@ -6,41 +6,41 @@ struct Styles;
 
 #[component]
 pub fn FormInput(
-  #[props(into)] label: String,
-  #[props(into)] name: String,
-  #[props(default, into)] r#type: String,
-  #[props(default, into)] required: bool,
-  #[props(default, into)] value: Signal<String>,
-  #[props(default, into)] placeholder: String,
-  #[props(default, into)] autocomplete: String,
-  oninput: Option<EventHandler<FormEvent>>,
-  #[props(extends=GlobalAttributes)]
-  #[props(extends=input)]
-  attributes: Vec<Attribute>,
+    #[props(into)] label: String,
+    #[props(into)] name: String,
+    #[props(default, into)] r#type: String,
+    #[props(default, into)] required: bool,
+    #[props(default, into)] value: Signal<String>,
+    #[props(default, into)] placeholder: String,
+    #[props(default, into)] autocomplete: String,
+    oninput: Option<EventHandler<FormEvent>>,
+    #[props(extends=GlobalAttributes)]
+    #[props(extends=input)]
+    attributes: Vec<Attribute>,
 ) -> Element {
-  rsx! {
-    div { class: "flex flex-col gap-1 w-full",
-        Label {
-            class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
-            html_for: "{name}",
-            "{label}"
-        }
-        input {
-            class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
-            id: "{name}",
-            name,
-            r#type,
-            placeholder,
-            autocomplete,
-            oninput: move |event: FormEvent| {
-                value.set(event.value());
-            },
-            required,
-            value: "{value}",
-            ..attributes,
+    rsx! {
+        div { class: "flex flex-col gap-1 w-full",
+            Label {
+                class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
+                html_for: "{name}",
+                "{label}"
+            }
+            input {
+                class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
+                id: "{name}",
+                name,
+                r#type,
+                placeholder,
+                autocomplete,
+                oninput: move |event: FormEvent| {
+                    value.set(event.value());
+                },
+                required,
+                value: "{value}",
+                ..attributes,
+            }
         }
     }
-}
 }
 
 #[component]
@@ -98,75 +98,76 @@ pub fn Input(
     }
 }
 
-
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub enum ButtonVariant {
-  #[default]
-  Primary,
-  Secondary,
+    #[default]
+    Primary,
+    Secondary,
 }
 
 #[component]
 pub fn Button(
-  children: Element,
-  #[props(default, into)]
-  class: String,
-  #[props(default)]
-  variant: ButtonVariant,
-  onclick: Option<EventHandler<MouseEvent>>,
-  #[props(extends = Button)]
-  props: Vec<Attribute>
+    children: Element,
+    #[props(default, into)] class: String,
+    #[props(default)] variant: ButtonVariant,
+    onclick: Option<EventHandler<MouseEvent>>,
+    #[props(extends = Button)] props: Vec<Attribute>,
 ) -> Element {
-  let variant_class = match variant {
-    ButtonVariant::Primary => "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
-    ButtonVariant::Secondary => "border border-zinc-300 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800",
-  };
+    let variant_class = match variant {
+        ButtonVariant::Primary => {
+            "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        }
+        ButtonVariant::Secondary => {
+            "border border-zinc-300 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        }
+    };
 
-  rsx! {
-    button {
-        class: "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition {variant_class} {class}",
-        onclick: move |evt| {
-            if let Some(handler) = onclick.as_ref() {
-                handler.call(evt);
-            }
-        },
-        ..props,
-        {children}
+    rsx! {
+        button {
+            class: "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition {variant_class} {class}",
+            onclick: move |evt| {
+                if let Some(handler) = onclick.as_ref() {
+                    handler.call(evt);
+                }
+            },
+            ..props,
+            {children}
+        }
     }
-}
 }
 
 #[component]
 pub fn ButtonLink(
-  #[props(into)] to: NavigationTarget,
-  children: Element,
-  #[props(default, into)] class: String,
-  #[props(default)] variant: ButtonVariant,
+    #[props(into)] to: NavigationTarget,
+    children: Element,
+    #[props(default, into)] class: String,
+    #[props(default)] variant: ButtonVariant,
 ) -> Element {
-  let variant_class = match variant {
-    ButtonVariant::Primary => "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
-    ButtonVariant::Secondary => "border border-zinc-300 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800",
-  };
+    let variant_class = match variant {
+        ButtonVariant::Primary => {
+            "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        }
+        ButtonVariant::Secondary => {
+            "border border-zinc-300 text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        }
+    };
 
-  rsx! {
-    Link {
-        class: "inline-block rounded-lg px-5 py-2.5 font-semibold transition {variant_class} {class}",
-        to,
-        {children}
+    rsx! {
+        Link {
+            class: "inline-block rounded-lg px-5 py-2.5 font-semibold transition {variant_class} {class}",
+            to,
+            {children}
+        }
     }
-}
 }
 
 #[component]
-pub fn AuthLink(
-  #[props(into)] to: NavigationTarget,
-  #[props(into)] label: String,
-) -> Element {
-  rsx! {
-    Link {
-        class: "font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",
-        to,
-        "{label}"
+pub fn AuthLink(#[props(into)] to: NavigationTarget, #[props(into)] label: String) -> Element {
+    rsx! {
+        Link {
+            class: "font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",
+            to,
+            "{label}"
+        }
     }
-}
 }

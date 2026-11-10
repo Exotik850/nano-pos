@@ -1,10 +1,10 @@
 use dioxus::fullstack::Form;
 use dioxus::prelude::*;
 
+use crate::Route;
 use crate::components::ContactFormView;
 use crate::contacts::create_contact;
 use crate::models::ContactForm;
-use crate::Route;
 
 #[component]
 pub fn NewContact() -> Element {

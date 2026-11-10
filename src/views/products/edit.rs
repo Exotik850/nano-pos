@@ -1,9 +1,9 @@
 use dioxus::prelude::*;
 
+use crate::Route;
 use crate::components::ProductFormView;
 use crate::models::ProductForm;
 use crate::products::{get_product, update_product};
-use crate::Route;
 
 #[component]
 pub fn EditProduct(id: i32) -> Element {

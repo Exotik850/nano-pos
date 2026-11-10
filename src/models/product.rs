@@ -3,7 +3,6 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "server", derive(Queryable, Selectable))]
 #[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::product))]

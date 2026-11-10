@@ -39,7 +39,7 @@ pub fn TableHeaderCell(
     children: Element,
     #[props(default)] align_end: bool,
     #[props(default, into)] class: String,
-    #[props(extends = GlobalAttributes)] props: Vec<Attribute>
+    #[props(extends = GlobalAttributes)] props: Vec<Attribute>,
 ) -> Element {
     let alignment = if align_end { "text-right" } else { "" };
     rsx! {
@@ -52,7 +52,7 @@ pub fn TableCell(
     children: Element,
     #[props(default)] align_end: bool,
     #[props(default, into)] class: String,
-    #[props(extends = GlobalAttributes)] props: Vec<Attribute>
+    #[props(extends = GlobalAttributes)] props: Vec<Attribute>,
 ) -> Element {
     let alignment = if align_end { "text-right" } else { "" };
     rsx! {

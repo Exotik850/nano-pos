@@ -5,9 +5,11 @@ use serde::{Deserialize, Serialize};
 use crate::components::{input::FormInput, textarea::FormTextarea};
 use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProduct, Product};
 
-use super::{Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
+use super::{
+    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
+    TableRow,
+};
 use crate::Route;
-
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct InvoiceDraft {
@@ -27,12 +29,42 @@ pub fn InvoiceFormView(
     submit_label: String,
     onsubmit: EventHandler<Result<InvoiceDraft, String>>,
 ) -> Element {
-    let mut customer_id = use_signal(|| initial.as_ref().map(|value| value.invoice.customer_id.to_string()).unwrap_or_default());
-    let doc_number = use_signal(|| initial.as_ref().map(|value| value.invoice.doc_number.clone()).unwrap_or_default());
-    let description = use_signal(|| initial.as_ref().and_then(|value| value.invoice.description.clone()).unwrap_or_default());
-    let order_date = use_signal(|| initial.as_ref().map_or_else(|| "2026-01-01T00:00".to_string(), |value| datetime_input(value.invoice.order_date)));
-    let delivery_date = use_signal(|| initial.as_ref().and_then(|value| value.invoice.delivery_date.map(datetime_input)).unwrap_or_default());
-    let mut lines = use_signal(|| initial.as_ref().map(|value| value.products.clone()).unwrap_or_default());
+    let mut customer_id = use_signal(|| {
+        initial
+            .as_ref()
+            .map(|value| value.invoice.customer_id.to_string())
+            .unwrap_or_default()
+    });
+    let doc_number = use_signal(|| {
+        initial
+            .as_ref()
+            .map(|value| value.invoice.doc_number.clone())
+            .unwrap_or_default()
+    });
+    let description = use_signal(|| {
+        initial
+            .as_ref()
+            .and_then(|value| value.invoice.description.clone())
+            .unwrap_or_default()
+    });
+    let order_date = use_signal(|| {
+        initial.as_ref().map_or_else(
+            || "2026-01-01T00:00".to_string(),
+            |value| datetime_input(value.invoice.order_date),
+        )
+    });
+    let delivery_date = use_signal(|| {
+        initial
+            .as_ref()
+            .and_then(|value| value.invoice.delivery_date.map(datetime_input))
+            .unwrap_or_default()
+    });
+    let mut lines = use_signal(|| {
+        initial
+            .as_ref()
+            .map(|value| value.products.clone())
+            .unwrap_or_default()
+    });
     let mut selected_product = use_signal(String::new);
     let mut quantity = use_signal(|| "1".to_string());
     let mut price = use_signal(String::new);
@@ -225,9 +257,17 @@ pub fn InvoiceFormView(
                         for line in lines() {
                             {
                                 let product = products.iter().find(|product| product.id == line.product_id);
-                                let product_name = product.map_or_else(|| format!("Product #{}", line.product_id), |value| value.name.clone());
+                                let product_name = product
+                                    .map_or_else(
+                                        || format!("Product #{}", line.product_id),
+                                        |value| value.name.clone(),
+                                    );
                                 let line_price = line
-                                    .price.map_or_else(|| "-".to_string(), |value| format!("${:.2}", f64::from(value) / 100.0));
+                                    .price
+                                    .map_or_else(
+                                        || "-".to_string(),
+                                        |value| format!("${:.2}", f64::from(value) / 100.0),
+                                    );
                                 rsx! {
                                     TableRow {
                                         TableCell { class: "text-zinc-700 dark:text-zinc-300", "{product_name}" }

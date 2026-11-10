@@ -1,13 +1,19 @@
 use dioxus::prelude::*;
 
-use crate::components::{Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
+use crate::Route;
+use crate::components::{
+    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
+    TableRow,
+};
 use crate::contacts::{delete_contact, list_contacts};
 use crate::models::Contact;
-use crate::Route;
 
 #[component]
 fn ContactTableRow(contact: Contact, ondelete: EventHandler<i32>) -> Element {
-    let message = contact.message.clone().unwrap_or_else(|| "No message".to_string());
+    let message = contact
+        .message
+        .clone()
+        .unwrap_or_else(|| "No message".to_string());
     rsx! {
         TableRow {
             TableCell {

@@ -15,8 +15,8 @@ pub use invoice::{InvoiceDraft, InvoiceFormView};
 
 mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
-pub mod label;
 pub mod input;
+pub mod label;
 pub use input::{AuthLink, Button, ButtonLink, ButtonVariant, FormInput};
 pub mod textarea;
 

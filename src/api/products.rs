@@ -3,9 +3,7 @@ use dioxus::{fullstack::Form, prelude::*};
 use crate::models::{Product, ProductForm};
 
 #[cfg(feature = "server")]
-fn require_product_session(
-    headers: &dioxus::fullstack::HeaderMap,
-) -> Result<(), ServerFnError> {
+fn require_product_session(headers: &dioxus::fullstack::HeaderMap) -> Result<(), ServerFnError> {
     crate::server::auth::current_user_impl(headers)?
         .map(|_| ())
         .ok_or_else(|| ServerFnError::Response("You must be signed in to manage products.".into()))
@@ -26,7 +24,9 @@ pub async fn get_product(product_id: i32) -> Result<Option<Product>, ServerFnErr
     match Product::find(&mut conn, product_id) {
         Ok(product) => Ok(Some(product)),
         Err(diesel::result::Error::NotFound) => Ok(None),
-        Err(error) => Err(ServerFnError::Response(format!("Could not load product: {error}"))),
+        Err(error) => Err(ServerFnError::Response(format!(
+            "Could not load product: {error}"
+        ))),
     }
 }
 
@@ -39,10 +39,7 @@ pub async fn create_product(form: Form<ProductForm>) -> Result<Product, ServerFn
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
-pub async fn update_product(
-    product_id: i32,
-    form: ProductForm,
-) -> Result<Product, ServerFnError> {
+pub async fn update_product(product_id: i32, form: ProductForm) -> Result<Product, ServerFnError> {
     require_product_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Product::update(&mut conn, product_id, &form)

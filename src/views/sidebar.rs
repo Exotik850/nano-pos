@@ -1,25 +1,21 @@
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsLeft;
 
-use crate::components::{Button, ButtonVariant};
 use crate::Route;
+use crate::components::{Button, ButtonVariant};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct Hidden(pub Signal<bool>);
 
 #[component]
-pub fn SidebarLink(
-  #[props(into)] to: NavigationTarget,
-  children: Element,
-) -> Element {
-  rsx! {
-    Link {
-        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 ease-out hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
-        to,
-        {children}
+pub fn SidebarLink(#[props(into)] to: NavigationTarget, children: Element) -> Element {
+    rsx! {
+        Link {
+            class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 ease-out hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+            to,
+            {children}
+        }
     }
-}
-
 }
 
 #[component]
@@ -29,11 +25,11 @@ pub fn Sidebar() -> Element {
     use_context_provider(|| Hidden(hidden));
 
     if auth.session().is_none() {
-       return rsx! {
-        div { class: "flex min-h-screen w-full",
-            main { class: "min-w-0 flex-1", Outlet::<Route> {} }
-        }
-    };
+        return rsx! {
+            div { class: "flex min-h-screen w-full",
+                main { class: "min-w-0 flex-1", Outlet::<Route> {} }
+            }
+        };
     }
 
     rsx! {

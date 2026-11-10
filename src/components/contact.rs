@@ -1,7 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::{
-    components::{input::FormInput, textarea::FormTextarea}, models::{Contact, ContactForm},
+    components::{input::FormInput, textarea::FormTextarea},
+    models::{Contact, ContactForm},
 };
 
 use super::Button;
