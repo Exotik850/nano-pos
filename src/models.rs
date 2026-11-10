@@ -42,7 +42,7 @@ pub struct Product {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-#[cfg_attr(feature = "server", derive(Insertable))]
+#[cfg_attr(feature = "server", derive(Insertable, AsChangeset))]
 #[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::product))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 pub struct ProductForm {
@@ -131,10 +131,7 @@ impl Product {
 
         diesel::update(crate::server::schema::product::table.find(product_id))
             .set((
-                crate::server::schema::product::name.eq(&form.name),
-                crate::server::schema::product::description.eq(&form.description),
-                crate::server::schema::product::price.eq(form.price),
-                crate::server::schema::product::quantity.eq(form.quantity),
+                form,
                 crate::server::schema::product::updated_at.eq(diesel::dsl::now),
             ))
             .returning(Self::as_returning())
