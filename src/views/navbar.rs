@@ -1,6 +1,6 @@
 use crate::Route;
 use crate::auth::AuthContext;
-use crate::components::{Button, ButtonLink, ButtonVariant};
+use crate::components::{Button, ButtonLink, ButtonVariant, SearchBar};
 use crate::views::sidebar::Hidden;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsRight;
@@ -43,6 +43,10 @@ pub fn Navbar() -> Element {
                 class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100 {button_class}",
                 to: Route::Home {},
                 "Home"
+            }
+
+            SearchBar {
+              
             }
 
             // Right-aligned auth controls.

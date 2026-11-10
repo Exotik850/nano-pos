@@ -19,3 +19,6 @@ pub mod label;
 pub mod input;
 pub use input::{AuthLink, Button, ButtonLink, ButtonVariant, FormInput};
 pub mod textarea;
+
+mod searchbar;
+pub use searchbar::SearchBar;
