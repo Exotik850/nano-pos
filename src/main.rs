@@ -16,7 +16,7 @@ mod views;
 #[cfg(feature = "server")]
 mod server;
 
-mod models;
+pub mod models;
 mod products;
 mod contacts;
 

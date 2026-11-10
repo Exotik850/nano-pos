@@ -34,7 +34,20 @@ nano-pos is meant to be a minimal implementation of a Point-of-Sale system for s
 - zip
 
 ## Invoice
+- customer id
+- user id
 - doc number
+- description?
+- order date
+- deliver date
+
+### InvoiceProduct
+- invoice id
+- product id
+- quantity
+- tax rate?
+- price?
+- description?
 
 ## Estimate
 todo!

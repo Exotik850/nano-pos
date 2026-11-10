@@ -12,8 +12,8 @@ pub struct User {
     pub username: String,
     pub email: String,
     pub password_hash: String,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug)]
@@ -37,8 +37,8 @@ pub struct Product {
     pub description: Option<String>,
     pub price: i32,
     pub quantity: i32,
-    pub created_at: Option<NaiveDateTime>,
-    pub updated_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -69,7 +69,8 @@ pub struct Contact {
     pub state: String,
     pub zip_code: String,
     pub country: String,
-    pub created_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]

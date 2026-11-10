@@ -1,6 +1,22 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    address (id) {
+        id -> Int4,
+        #[max_length = 255]
+        street -> Varchar,
+        #[max_length = 100]
+        city -> Varchar,
+        #[max_length = 100]
+        state -> Varchar,
+        #[max_length = 20]
+        zip_code -> Varchar,
+        #[max_length = 100]
+        country -> Varchar,
+    }
+}
+
+diesel::table! {
     contact (id) {
         id -> Int4,
         #[max_length = 255]
@@ -22,7 +38,35 @@ diesel::table! {
         zip_code -> Varchar,
         #[max_length = 100]
         country -> Varchar,
-        created_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    invoice (id) {
+        id -> Int4,
+        customer -> Int4,
+        user_id -> Int4,
+        #[max_length = 255]
+        doc_number -> Varchar,
+        description -> Nullable<Text>,
+        order_date -> Timestamp,
+        delivery_date -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    invoice_product (id) {
+        id -> Int4,
+        invoice -> Int4,
+        product -> Int4,
+        quantity -> Int4,
+        price -> Nullable<Int4>,
+        tax_rate -> Nullable<Numeric>,
+        description -> Nullable<Text>,
     }
 }
 
@@ -36,8 +80,8 @@ diesel::table! {
         description -> Nullable<Text>,
         price -> Int4,
         quantity -> Int4,
-        created_at -> Nullable<Timestamp>,
-        updated_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -50,9 +94,21 @@ diesel::table! {
         email -> Varchar,
         #[max_length = 255]
         password_hash -> Varchar,
-        created_at -> Nullable<Timestamp>,
-        updated_at -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(contact, product, users,);
+diesel::joinable!(invoice -> contact (customer));
+diesel::joinable!(invoice -> users (user_id));
+diesel::joinable!(invoice_product -> invoice (invoice));
+diesel::joinable!(invoice_product -> product (product));
+
+diesel::allow_tables_to_appear_in_same_query!(
+    address,
+    contact,
+    invoice,
+    invoice_product,
+    product,
+    users,
+);
