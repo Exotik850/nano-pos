@@ -1,6 +1,8 @@
 use dioxus::{fullstack::Form, prelude::*};
 
 use crate::components::InvoiceDraft;
+#[cfg(feature = "server")]
+use crate::models::InvoiceForm;
 use crate::models::{Invoice, InvoiceDetails, InvoiceProduct};
 
 #[cfg(feature = "server")]
@@ -119,6 +121,7 @@ pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
 
 #[cfg(feature = "server")]
 fn validate_invoice(form: &InvoiceForm, products: &[InvoiceProduct]) -> Result<(), ServerFnError> {
+    use chrono::NaiveDateTime;
     if form.doc_number.trim().is_empty() {
         return Err(ServerFnError::Response(
             "Document number is required.".into(),
