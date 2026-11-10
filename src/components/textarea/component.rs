@@ -98,12 +98,8 @@ pub fn FormTextarea(
     attributes: Vec<Attribute>,
 ) -> Element {
     rsx! {
-        div {
-            class: "flex flex-col gap-1 w-full",
-            Label {
-                html_for: "{name}",
-                "{label}"
-            }
+        div { class: "flex flex-col gap-1 w-full",
+            Label { html_for: "{name}", "{label}" }
             textarea {
                 class: "w-full {Styles::dx_textarea} {class}",
                 id: "{name}",

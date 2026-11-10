@@ -36,14 +36,15 @@ pub fn AuthForm(
                     evt.prevent_default();
                     onsubmit.call(evt);
                 },
-                h1 { class: "text-2xl font-bold text-zinc-900 dark:text-zinc-100", "{title}" }
+                h1 { class: "text-2xl font-bold text-zinc-900 dark:text-zinc-100",
+                    "{title}"
+                }
                 p { class: "mt-1 text-sm text-zinc-500 dark:text-zinc-400", "{subtitle}" }
 
                 div { class: "mt-6 flex flex-col gap-4", {children} }
 
                 if let Some(message) = error {
-                    p {
-                        class: "mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300",
+                    p { class: "mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300",
                         "{message}"
                     }
                 }
@@ -54,7 +55,9 @@ pub fn AuthForm(
                     "{submit_label}"
                 }
 
-                div { class: "mt-6 flex items-center justify-center gap-4 text-sm", {footer} }
+                div { class: "mt-6 flex items-center justify-center gap-4 text-sm",
+                    {footer}
+                }
             }
         }
     }

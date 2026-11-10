@@ -19,29 +19,28 @@ pub fn FormInput(
   attributes: Vec<Attribute>,
 ) -> Element {
   rsx! {
-    div {
-      class: "flex flex-col gap-1 w-full",
-      Label {
-        class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
-        html_for: "{name}",
-        "{label}"
-      }
-      input {
-        class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
-        id: "{name}",
-        name,
-        r#type,
-        placeholder,
-        autocomplete,
-        oninput: move |event: FormEvent| {
-          value.set(event.value());
-        },
-        required,
-        value: "{value}",
-        ..attributes,
-      }
+    div { class: "flex flex-col gap-1 w-full",
+        Label {
+            class: "flex flex-col gap-1 text-sm font-medium text-zinc-700 dark:text-zinc-300",
+            html_for: "{name}",
+            "{label}"
+        }
+        input {
+            class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
+            id: "{name}",
+            name,
+            r#type,
+            placeholder,
+            autocomplete,
+            oninput: move |event: FormEvent| {
+                value.set(event.value());
+            },
+            required,
+            value: "{value}",
+            ..attributes,
+        }
     }
-  }
+}
 }
 
 #[component]
@@ -125,16 +124,16 @@ pub fn Button(
 
   rsx! {
     button {
-      class: "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition {variant_class} {class}",
-      onclick: move |evt| {
-        if let Some(handler) = onclick.as_ref() {
-          handler.call(evt);
-        }
-      },
-      ..props,
-      {children},
+        class: "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition {variant_class} {class}",
+        onclick: move |evt| {
+            if let Some(handler) = onclick.as_ref() {
+                handler.call(evt);
+            }
+        },
+        ..props,
+        {children}
     }
-  }
+}
 }
 
 #[component]
@@ -151,11 +150,11 @@ pub fn ButtonLink(
 
   rsx! {
     Link {
-      class: "inline-block rounded-lg px-5 py-2.5 font-semibold transition {variant_class} {class}",
-      to,
-      {children},
+        class: "inline-block rounded-lg px-5 py-2.5 font-semibold transition {variant_class} {class}",
+        to,
+        {children}
     }
-  }
+}
 }
 
 #[component]
@@ -165,9 +164,9 @@ pub fn AuthLink(
 ) -> Element {
   rsx! {
     Link {
-      class: "font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",
-      to,
-      "{label}"
+        class: "font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100",
+        to,
+        "{label}"
     }
-  }
+}
 }

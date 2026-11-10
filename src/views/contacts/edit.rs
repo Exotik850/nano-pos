@@ -16,22 +16,35 @@ pub fn EditContact(id: i32) -> Element {
         Ok(Some(contact)) => rsx! {
             div { class: "mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-8",
                 div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Edit contact" }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400", "Update the details for {contact.first_name} {contact.last_name}." }
+                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                        "Edit contact"
+                    }
+                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
+                        "Update the details for {contact.first_name} {contact.last_name}."
+                    }
                 }
                 if let Some(message) = error() {
-                    p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
+                    p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
+                        "{message}"
+                    }
                 }
                 ContactFormView {
                     initial: contact,
                     submit_label: if loading() { "Saving..." } else { "Save changes" },
                     onsubmit: move |draft: ContactForm| async move {
-                        if loading() { return; }
+                        if loading() {
+                            return;
+                        }
                         loading.set(true);
                         error.set(None);
                         match update_contact(id, draft).await {
-                            Ok(_) => { navigator.replace(Route::IndexContacts {}); }
-                            Err(message) => { error.set(Some(message.to_string())); loading.set(false); }
+                            Ok(_) => {
+                                navigator.replace(Route::IndexContacts {});
+                            }
+                            Err(message) => {
+                                error.set(Some(message.to_string()));
+                                loading.set(false);
+                            }
                         }
                     },
                 }
@@ -39,13 +52,21 @@ pub fn EditContact(id: i32) -> Element {
         },
         Ok(None) => rsx! {
             div { class: "mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8",
-                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Contact not found" }
-                Link { to: Route::IndexContacts {}, class: "text-zinc-700 underline dark:text-zinc-300", "Back to contacts" }
+                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                    "Contact not found"
+                }
+                Link {
+                    to: Route::IndexContacts {},
+                    class: "text-zinc-700 underline dark:text-zinc-300",
+                    "Back to contacts"
+                }
             }
         },
         Err(message) => rsx! {
             div { class: "mx-auto w-full max-w-3xl px-6 py-8",
-                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
+                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
+                    "{message}"
+                }
             }
         },
     }

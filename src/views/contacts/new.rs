@@ -15,21 +15,32 @@ pub fn NewContact() -> Element {
     rsx! {
         div { class: "mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-8",
             div {
-                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Add contact" }
+                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                    "Add contact"
+                }
                 p { class: "mt-1 text-zinc-500 dark:text-zinc-400", "Create a customer contact." }
             }
             if let Some(message) = error() {
-                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
+                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
+                    "{message}"
+                }
             }
             ContactFormView {
                 submit_label: if loading() { "Creating..." } else { "Create contact" },
                 onsubmit: move |draft: ContactForm| async move {
-                    if loading() { return; }
+                    if loading() {
+                        return;
+                    }
                     loading.set(true);
                     error.set(None);
                     match create_contact(Form(draft)).await {
-                        Ok(_) => { navigator.replace(Route::IndexContacts {}); }
-                        Err(message) => { error.set(Some(message.to_string())); loading.set(false); }
+                        Ok(_) => {
+                            navigator.replace(Route::IndexContacts {});
+                        }
+                        Err(message) => {
+                            error.set(Some(message.to_string()));
+                            loading.set(false);
+                        }
                     }
                 },
             }

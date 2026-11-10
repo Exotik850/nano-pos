@@ -10,6 +10,9 @@ pub use product::ProductFormView;
 mod contact;
 pub use contact::ContactFormView;
 
+mod invoice;
+pub use invoice::{InvoiceDraft, InvoiceFormView};
+
 mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
 pub mod label;

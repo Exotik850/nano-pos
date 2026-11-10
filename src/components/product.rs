@@ -43,64 +43,67 @@ pub fn ProductFormView(
     });
 
     rsx! {
-        form { 
-          class: "flex w-full max-w-4xl flex-col gap-6",
+        form {
+            class: "flex w-full max-w-4xl flex-col gap-6",
             onsubmit: move |event| {
                 event.prevent_default();
                 let form = ProductForm {
-                  name: name(),
-                  sku: sku(),
-                  description: if description().is_empty() { None } else { Some(description()) },
-                  price: (price().parse::<f64>().unwrap_or(0.0) * 100.0).round() as i32,
-                  quantity: quantity().parse::<i32>().unwrap_or(0),
+                    name: name(),
+                    sku: sku(),
+                    description: if description().is_empty() {
+                        None
+                    } else {
+                        Some(description())
+                    },
+                    price: (price().parse::<f64>().unwrap_or(0.0) * 100.0).round() as i32,
+                    quantity: quantity().parse::<i32>().unwrap_or(0),
                 };
                 onsubmit.call(form);
-            }, 
-            div {
-              class: "flex flex-row gap-4",
-              FormInput {
-                label: "Name",
-                name: "name",
-                r#type: "text",
-                required: true,
-                value: name,
-              }
-              FormInput {
-                label: "SKU",
-                name: "sku",
-                r#type: "text",
-                required: true,
-                value: sku,
-              }
+            },
+            div { class: "flex flex-row gap-4",
+                FormInput {
+                    label: "Name",
+                    name: "name",
+                    r#type: "text",
+                    required: true,
+                    value: name,
+                }
+                FormInput {
+                    label: "SKU",
+                    name: "sku",
+                    r#type: "text",
+                    required: true,
+                    value: sku,
+                }
             }
 
             FormTextarea {
-              label: "Description",
-              name: "description",
-              value: description,
-              placeholder: "Enter a description for the product",
-              resize: "none",
-              class: "min-h-32 w-full",
+                label: "Description",
+                name: "description",
+                value: description,
+                placeholder: "Enter a description for the product",
+                resize: "none",
+                class: "min-h-32 w-full",
             }
 
             div { class: "flex flex-row gap-4",
                 FormInput {
-                  label: "Price",
-                  name: "price",
-                  r#type: "number",
-                  required: true,
-                  min: "0",
-                  step: "0.01",
-                  value: price,
+                    label: "Price",
+                    name: "price",
+                    r#type: "number",
+                    required: true,
+                    min: "0",
+                    step: "0.01",
+                    value: price,
                 }
                 FormInput {
-                  label: "Quantity",
-                  name: "quantity",
-                  r#type: "number",
-                  required: true,
-                  min: "0",
-                  step: "1",
-                  value: quantity,
+                    label: "Quantity",
+                    name: "quantity",
+                    r#type: "number",
+                    required: true,
+                    min: "0",
+                    step: "1",
+                    value: quantity,
                 }
             }
 

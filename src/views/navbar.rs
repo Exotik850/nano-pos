@@ -46,11 +46,9 @@ pub fn Navbar() -> Element {
             }
 
             // Right-aligned auth controls.
-            div {
-                class: "ml-auto flex items-center gap-4",
+            div { class: "ml-auto flex items-center gap-4",
                 if let Some(session) = session.clone() {
-                    span {
-                        class: "text-sm text-zinc-600 dark:text-zinc-400",
+                    span { class: "text-sm text-zinc-600 dark:text-zinc-400",
                         "Signed in as "
                         strong { class: "text-zinc-900 dark:text-zinc-100", "{session.username}" }
                     }

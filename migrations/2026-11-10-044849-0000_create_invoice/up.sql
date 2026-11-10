@@ -12,11 +12,11 @@ create table invoice (
 );
 
 create table invoice_product (
+  id SERIAL PRIMARY KEY,
   invoice_id INT NOT NULL REFERENCES invoice(id),
   product_id INT NOT NULL REFERENCES product(id),
   quantity INT NOT NULL,
   price INT,
   tax_rate DOUBLE PRECISION,
-  description TEXT,
-  primary key (invoice_id, product_id)
+  description TEXT
 );

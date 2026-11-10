@@ -2,8 +2,11 @@
 // need dioxus
 use dioxus::prelude::*;
 
-use views::{EditContact, EditProduct, Home, IndexContacts, IndexProducts, Login, Navbar, NewContact, NewProduct, Signup};
 use auth::AuthProvider;
+use views::{
+    EditContact, EditInvoice, EditProduct, Home, IndexContacts, IndexInvoices, IndexProducts,
+    Login, Navbar, NewContact, NewInvoice, NewProduct, Signup,
+};
 
 use crate::{auth::AuthGaurd, views::Sidebar};
 
@@ -19,65 +22,55 @@ mod server;
 pub mod models;
 
 mod api;
-pub use api::{contacts, products};
+pub use api::{contacts, invoices, products};
 
 #[component]
 fn LoadingFallback() -> Element {
     rsx! {
-      SuspenseBoundary {
-        fallback: |_: SuspenseContext| {
-          rsx! {
-            div {
-              class: "page-loading flex min-h-screen items-center justify-center",
-              span {
-                class: "page-loading-indicator",
-                aria_hidden: "true",
-              }
-            }
-          }
-        },
-        Outlet::<Route> {}
-      }
+        SuspenseBoundary {
+            fallback: |_: SuspenseContext| {
+                rsx! {
+                    div { class: "page-loading flex min-h-screen items-center justify-center",
+                        span { class: "page-loading-indicator", aria_hidden: "true" }
+                    }
+                }
+            },
+            Outlet::<Route> {}
+        }
     }
 }
 
 #[component]
 fn ErrorFallback() -> Element {
     rsx! {
-      ErrorBoundary {
-        handle_error: |e: ErrorContext| {
-          let err = e.error().map_or_else(|| "Unknown error".to_string(), |s| s.to_string());
-          rsx! {
-            div {
-              class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",
-              h1 {
-                class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                "Something went wrong."
-              }
-              h3 {
-                class: "text-lg text-zinc-500 dark:text-zinc-400",
-                "details: {err}"
-              }
-            }
-          }
-        },
-        Outlet::<Route> {}
-      }
+        ErrorBoundary {
+            handle_error: |e: ErrorContext| {
+                let err = e
+                    .error()
+                    .map_or_else(|| "Unknown error".to_string(), |s| s.to_string());
+                rsx! {
+                    div { class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",
+                        h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Something went wrong." }
+                        h3 { class: "text-lg text-zinc-500 dark:text-zinc-400", "details: {err}" }
+                    }
+                }
+            },
+            Outlet::<Route> {}
+        }
     }
 }
 
 #[component]
 fn PageTransitions() -> Element {
-  let route = use_route::<Route>();
-  rsx! {
-    div {
-      key: "{route}",
-      class: "transition-opacity duration-300 ease-out animate-[page-transition-in_260ms_ease-out_both] motion-reduce:animate-none",
-      Outlet::<Route> {}
+    let route = use_route::<Route>();
+    rsx! {
+        div {
+            key: "{route}",
+            class: "transition-opacity duration-300 ease-out animate-[page-transition-in_260ms_ease-out_both] motion-reduce:animate-none",
+            Outlet::<Route> {}
+        }
     }
-  }
 }
-
 
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
@@ -99,7 +92,7 @@ enum Route {
         Login {},
         #[route("/signup")]
         Signup {},
-        #[layout(AuthGaurd)]
+    #[layout(AuthGaurd)]
         #[route("/products")]
         IndexProducts {},
         #[route("/products/new")]
@@ -112,6 +105,12 @@ enum Route {
         NewContact {},
         #[route("/contacts/:id/edit")]
         EditContact { id: i32 },
+        #[route("/invoices")]
+        IndexInvoices {},
+        #[route("/invoices/new")]
+        NewInvoice {},
+        #[route("/invoices/:id/edit")]
+        EditInvoice { id: i32 },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

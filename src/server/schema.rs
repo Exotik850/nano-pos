@@ -43,7 +43,8 @@ diesel::table! {
 }
 
 diesel::table! {
-    invoice_product (invoice_id, product_id) {
+    invoice_product (id) {
+        id -> Int4,
         invoice_id -> Int4,
         product_id -> Int4,
         quantity -> Int4,

@@ -3,12 +3,12 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "server", derive(Queryable, Selectable))]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(crate::models::User)))]
-#[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Customer)))]
+#[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Contact, foreign_key = customer_id)))]
 pub struct Invoice {
     pub id: i32,
     pub customer_id: i32,
@@ -21,13 +21,12 @@ pub struct Invoice {
     pub updated_at: NaiveDateTime,
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "server", derive(Insertable, AsChangeset))]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(crate::models::User)))]
-#[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Customer)))]
+#[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Contact, foreign_key = customer_id)))]
 pub struct InvoiceForm {
     pub customer_id: i32,
     pub user_id: i32,
@@ -37,18 +36,159 @@ pub struct InvoiceForm {
     pub delivery_date: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-#[cfg_attr(feature = "server", derive(Queryable, Selectable, Insertable, AsChangeset, Associations))]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(
+    feature = "server",
+    derive(Queryable, Selectable, Insertable, AsChangeset, Associations)
+)]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice_product))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(Invoice)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Product)))]
-#[cfg_attr(feature = "server", diesel(primary_key(invoice_id, product_id)))]
 pub struct InvoiceProduct {
+    pub id: i32,
     pub invoice_id: i32,
     pub product_id: i32,
     pub quantity: i32,
     pub price: Option<i32>,
     pub tax_rate: Option<f64>,
     pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct InvoiceDetails {
+    pub invoice: Invoice,
+    pub products: Vec<InvoiceProduct>,
+}
+
+#[cfg(feature = "server")]
+impl Invoice {
+    pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
+        use diesel::prelude::*;
+
+        crate::server::schema::invoice::table
+            .select(Self::as_select())
+            .order(crate::server::schema::invoice::order_date.desc())
+            .load(conn)
+    }
+
+    pub fn find(conn: &mut diesel::PgConnection, invoice_id: i32) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        crate::server::schema::invoice::table
+            .select(Self::as_select())
+            .find(invoice_id)
+            .first(conn)
+    }
+
+    pub fn products(
+        conn: &mut diesel::PgConnection,
+        invoice_id: i32,
+    ) -> diesel::QueryResult<Vec<InvoiceProduct>> {
+        use diesel::prelude::*;
+
+        crate::server::schema::invoice_product::table
+            .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id))
+            .order(crate::server::schema::invoice_product::product_id.asc())
+            .load(conn)
+    }
+
+    pub fn create(
+        conn: &mut diesel::PgConnection,
+        form: &InvoiceForm,
+        products: &[InvoiceProduct],
+    ) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        conn.transaction(|conn| {
+            let invoice_id = diesel::insert_into(crate::server::schema::invoice::table)
+                .values(form)
+                .returning(crate::server::schema::invoice::id)
+                .get_result::<i32>(conn)?;
+            if !products.is_empty() {
+                diesel::insert_into(crate::server::schema::invoice_product::table)
+                    .values(products)
+                    .execute(conn)?;
+            }
+            Self::find(conn, invoice_id)
+        })
+    }
+
+    pub fn update(
+        conn: &mut diesel::PgConnection,
+        invoice_id: i32,
+        form: &InvoiceForm,
+        products: &[InvoiceProduct],
+    ) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        conn.transaction(|conn| {
+            diesel::update(crate::server::schema::invoice::table.find(invoice_id))
+                .set((
+                    form,
+                    crate::server::schema::invoice::updated_at.eq(diesel::dsl::now),
+                ))
+                .execute(conn)?;
+            diesel::delete(
+                crate::server::schema::invoice_product::table
+                    .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id)),
+            )
+            .execute(conn)?;
+            if !products.is_empty() {
+                diesel::insert_into(crate::server::schema::invoice_product::table)
+                    .values(products)
+                    .execute(conn)?;
+            }
+            Self::find(conn, invoice_id)
+        })
+    }
+
+    pub fn delete(conn: &mut diesel::PgConnection, invoice_id: i32) -> diesel::QueryResult<usize> {
+        use diesel::prelude::*;
+
+        conn.transaction(|conn| {
+            diesel::delete(
+                crate::server::schema::invoice_product::table
+                    .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id)),
+            )
+            .execute(conn)?;
+            diesel::delete(crate::server::schema::invoice::table.find(invoice_id)).execute(conn)
+        })
+    }
+}
+
+#[cfg(feature = "server")]
+impl InvoiceProduct {
+    pub fn find(conn: &mut diesel::PgConnection, id: i32) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        crate::server::schema::invoice_product::table
+            .find(id)
+            .first(conn)
+    }
+
+    pub fn create(conn: &mut diesel::PgConnection, form: &Self) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        diesel::insert_into(crate::server::schema::invoice_product::table)
+            .values(form)
+            .get_result(conn)
+    }
+
+    pub fn update(
+        conn: &mut diesel::PgConnection,
+        id: i32,
+        form: &Self,
+    ) -> diesel::QueryResult<Self> {
+        use diesel::prelude::*;
+
+        diesel::update(crate::server::schema::invoice_product::table.find(id))
+            .set(form)
+            .get_result(conn)
+    }
+
+    pub fn delete(conn: &mut diesel::PgConnection, id: i32) -> diesel::QueryResult<usize> {
+        use diesel::prelude::*;
+        diesel::delete(crate::server::schema::invoice_product::table.find(id)).execute(conn)
+    }
 }

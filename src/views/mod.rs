@@ -28,3 +28,6 @@ pub use products::{EditProduct, IndexProducts, NewProduct};
 
 mod contacts;
 pub use contacts::{EditContact, IndexContacts, NewContact};
+
+mod invoices;
+pub use invoices::{EditInvoice, IndexInvoices, NewInvoice};

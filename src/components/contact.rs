@@ -78,35 +78,85 @@ pub fn ContactFormView(
             class: "flex w-full max-w-4xl flex-col gap-6",
             onsubmit: move |event| {
                 event.prevent_default();
-                onsubmit.call(ContactForm {
-                    first_name: first_name(),
-                    last_name: last_name(),
-                    phone_number: phone_number(),
-                    email: email(),
-                    message: (!message().is_empty()).then(&*message),
-                    street: street(),
-                    city: city(),
-                    state: state(),
-                    zip_code: zip_code(),
-                    country: country(),
-                });
+                onsubmit
+                    .call(ContactForm {
+                        first_name: first_name(),
+                        last_name: last_name(),
+                        phone_number: phone_number(),
+                        email: email(),
+                        message: (!message().is_empty()).then(&*message),
+                        street: street(),
+                        city: city(),
+                        state: state(),
+                        zip_code: zip_code(),
+                        country: country(),
+                    });
             },
             div { class: "flex flex-row gap-4",
-                FormInput { label: "First name", name: "first_name", r#type: "text", required: true, value: first_name }
-                FormInput { label: "Last name", name: "last_name", r#type: "text", required: true, value: last_name }
+                FormInput {
+                    label: "First name",
+                    name: "first_name",
+                    r#type: "text",
+                    required: true,
+                    value: first_name,
+                }
+                FormInput {
+                    label: "Last name",
+                    name: "last_name",
+                    r#type: "text",
+                    required: true,
+                    value: last_name,
+                }
             }
             div { class: "flex flex-row gap-4",
-                FormInput { label: "Phone number", name: "phone_number", r#type: "tel", required: true, value: phone_number }
-                FormInput { label: "Email", name: "email", r#type: "email", required: true, value: email }
+                FormInput {
+                    label: "Phone number",
+                    name: "phone_number",
+                    r#type: "tel",
+                    required: true,
+                    value: phone_number,
+                }
+                FormInput {
+                    label: "Email",
+                    name: "email",
+                    r#type: "email",
+                    required: true,
+                    value: email,
+                }
             }
             div { class: "flex flex-row gap-4",
-                FormInput { label: "Street", name: "street", r#type: "text", value: street }
-                FormInput { label: "City", name: "city", r#type: "text", value: city }
+                FormInput {
+                    label: "Street",
+                    name: "street",
+                    r#type: "text",
+                    value: street,
+                }
+                FormInput {
+                    label: "City",
+                    name: "city",
+                    r#type: "text",
+                    value: city,
+                }
             }
             div { class: "flex flex-row gap-4",
-                FormInput { label: "State", name: "state", r#type: "text", value: state }
-                FormInput { label: "ZIP code", name: "zip_code", r#type: "text", value: zip_code }
-                FormInput { label: "Country", name: "country", r#type: "text", value: country }
+                FormInput {
+                    label: "State",
+                    name: "state",
+                    r#type: "text",
+                    value: state,
+                }
+                FormInput {
+                    label: "ZIP code",
+                    name: "zip_code",
+                    r#type: "text",
+                    value: zip_code,
+                }
+                FormInput {
+                    label: "Country",
+                    name: "country",
+                    r#type: "text",
+                    value: country,
+                }
             }
             FormTextarea {
                 label: "Message",
