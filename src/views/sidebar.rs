@@ -47,14 +47,19 @@ pub fn Sidebar() -> Element {
                 }
                 nav { class: "flex flex-col gap-1", "aria-label": "Main navigation",
                     Link {
-                        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+                        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 ease-out hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
                         to: Route::Home {},
                         "Home"
                     }
                     Link {
-                        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+                        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 ease-out hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
                         to: Route::IndexProducts {},
                         "Products"
+                    }
+                    Link {
+                        class: "rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors duration-200 ease-out hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+                        to: Route::IndexContacts {},
+                        "Contacts"
                     }
                 }
             }

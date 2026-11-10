@@ -2,7 +2,7 @@
 // need dioxus
 use dioxus::prelude::*;
 
-use views::{Navbar, Home, Login, Signup, IndexProducts, NewProduct, EditProduct};
+use views::{EditContact, EditProduct, Home, IndexContacts, IndexProducts, Login, Navbar, NewContact, NewProduct, Signup};
 use auth::AuthProvider;
 
 use crate::{auth::AuthGaurd, views::Sidebar};
@@ -18,6 +18,7 @@ mod server;
 
 mod models;
 mod products;
+mod contacts;
 
 #[component]
 fn LoadingFallback() -> Element {
@@ -26,10 +27,10 @@ fn LoadingFallback() -> Element {
         fallback: |_: SuspenseContext| {
           rsx! {
             div {
-              class: "flex min-h-screen flex-col items-center justify-center gap-2 px-4",
-              h1 {
-                class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                "Loading..."
+              class: "page-loading flex min-h-screen items-center justify-center",
+              span {
+                class: "page-loading-indicator",
+                aria_hidden: "true",
               }
             }
           }
@@ -64,6 +65,18 @@ fn ErrorFallback() -> Element {
     }
 }
 
+#[component]
+fn PageTransitions() -> Element {
+  let route = use_route::<Route>();
+  rsx! {
+    div {
+      key: "{route}",
+      class: "transition-opacity duration-300 ease-out animate-[page-transition-in_260ms_ease-out_both] motion-reduce:animate-none",
+      Outlet::<Route> {}
+    }
+  }
+}
+
 
 /// The Route enum is used to define the structure of internal routes in our app. All route enums need to derive
 /// the [`Routable`] trait, which provides the necessary methods for the router to work.
@@ -78,6 +91,7 @@ enum Route {
     #[layout(Navbar)]
     #[layout(ErrorFallback)]
     #[layout(LoadingFallback)]
+    #[layout(PageTransitions)]
         #[route("/")]
         Home {},
         #[route("/login")]
@@ -91,6 +105,12 @@ enum Route {
         NewProduct {},
         #[route("/products/:id/edit")]
         EditProduct { id: i32 },
+        #[route("/contacts")]
+        IndexContacts {},
+        #[route("/contacts/new")]
+        NewContact {},
+        #[route("/contacts/:id/edit")]
+        EditContact { id: i32 },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

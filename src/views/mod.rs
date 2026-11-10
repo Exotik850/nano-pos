@@ -25,3 +25,6 @@ pub use sidebar::Sidebar;
 
 mod products;
 pub use products::{EditProduct, IndexProducts, NewProduct};
+
+mod contacts;
+pub use contacts::{EditContact, IndexContacts, NewContact};

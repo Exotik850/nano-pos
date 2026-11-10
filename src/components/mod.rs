@@ -7,6 +7,9 @@ pub use auth_form::AuthForm;
 mod product;
 pub use product::ProductFormView;
 
+mod contact;
+pub use contact::ContactFormView;
+
 mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
 pub mod label;
