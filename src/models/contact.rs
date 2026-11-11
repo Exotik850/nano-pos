@@ -53,72 +53,61 @@ pub struct ContactSearchResult {
 }
 
 #[cfg(feature = "server")]
-impl Contact {
-    pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
-        use diesel::prelude::*;
+mod contact_server {
+    use super::{Contact, ContactForm};
+    use crate::server::schema::contact::dsl::*;
+    use diesel::prelude::*;
 
-        crate::server::schema::contact::table
-            .select(Contact::as_select())
-            .order((
-                crate::server::schema::contact::last_name.asc(),
-                crate::server::schema::contact::first_name.asc(),
-            ))
-            .load(conn)
-    }
+    impl Contact {
+        pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
+            contact
+                .order((last_name.asc(), first_name.asc()))
+                .load(conn)
+        }
 
-    pub fn find(conn: &mut diesel::PgConnection, contact_id: i32) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-        crate::server::schema::contact::table
-            .select(Contact::as_select())
-            .filter(crate::server::schema::contact::id.eq(contact_id))
-            .first(conn)
-    }
+        pub fn find(conn: &mut diesel::PgConnection, contact_id: i32) -> diesel::QueryResult<Self> {
+            contact.filter(id.eq(contact_id)).first(conn)
+        }
 
-    pub fn create(
-        conn: &mut diesel::PgConnection,
-        form: &ContactForm,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
+        pub fn create(
+            conn: &mut diesel::PgConnection,
+            form: &ContactForm,
+        ) -> diesel::QueryResult<Self> {
+            conn.transaction(|conn| {
+                diesel::insert_into(contact)
+                    .values(form)
+                    .returning(id)
+                    .get_result::<i32>(conn)
+                    .and_then(|contact_id| Self::find(conn, contact_id))
+            })
+        }
 
-        conn.transaction(|conn| {
-            diesel::insert_into(crate::server::schema::contact::table)
-                .values(form)
-                .returning(crate::server::schema::contact::id)
-                .get_result::<i32>(conn)
-                .and_then(|id| Self::find(conn, id))
-        })
-    }
+        pub fn update(
+            conn: &mut diesel::PgConnection,
+            contact_id: i32,
+            form: &ContactForm,
+        ) -> diesel::QueryResult<Self> {
+            conn.transaction(|conn| {
+                diesel::update(contact.find(contact_id))
+                    .set(form)
+                    .execute(conn)?;
+                Self::find(conn, contact_id)
+            })
+        }
 
-    pub fn update(
-        conn: &mut diesel::PgConnection,
-        contact_id: i32,
-        form: &ContactForm,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        conn.transaction(|conn| {
-            diesel::update(crate::server::schema::contact::table.find(contact_id))
-                .set(form)
-                .execute(conn)?;
-            Self::find(conn, contact_id)
-        })
-    }
-
-    pub fn delete(conn: &mut diesel::PgConnection, contact_id: i32) -> diesel::QueryResult<usize> {
-        use diesel::prelude::*;
-
-        conn.transaction(|conn| {
-            let deleted = diesel::delete(crate::server::schema::contact::table.find(contact_id))
-                .execute(conn)?;
-            Ok(deleted)
-        })
+        pub fn delete(
+            conn: &mut diesel::PgConnection,
+            contact_id: i32,
+        ) -> diesel::QueryResult<usize> {
+            diesel::delete(contact.find(contact_id)).execute(conn)
+        }
     }
 }
 
 #[cfg(feature = "server")]
 mod contact_search {
-    use dioxus::server::inventory;
     use super::ContactSearchResult;
+    use dioxus::server::inventory;
 
     use crate::{api::search::SearchResult, server::search::SearchFilter};
 
@@ -127,10 +116,7 @@ mod contact_search {
             SearchResult {
                 route: crate::Route::EditContact { id: contact.id },
                 title: format!("{} {}", contact.first_name, contact.last_name),
-                description: format!(
-                    "Email: {}, Phone: {}",
-                    contact.email, contact.phone_number
-                ),
+                description: format!("Email: {}, Phone: {}", contact.email, contact.phone_number),
             }
         }
     }
