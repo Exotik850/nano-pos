@@ -40,6 +40,18 @@ pub struct ContactForm {
     pub country: String,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "server", derive(Queryable, Selectable))]
+#[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::contact))]
+#[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
+pub struct ContactSearchResult {
+    pub id: i32,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub phone_number: String,
+}
+
 #[cfg(feature = "server")]
 impl Contact {
     pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
@@ -106,8 +118,22 @@ impl Contact {
 #[cfg(feature = "server")]
 mod contact_search {
     use dioxus::server::inventory;
+    use super::ContactSearchResult;
 
     use crate::{api::search::SearchResult, server::search::SearchFilter};
+
+    impl From<ContactSearchResult> for SearchResult {
+        fn from(contact: ContactSearchResult) -> Self {
+            SearchResult {
+                route: crate::Route::EditContact { id: contact.id },
+                title: format!("{} {}", contact.first_name, contact.last_name),
+                description: format!(
+                    "Email: {}, Phone: {}",
+                    contact.email, contact.phone_number
+                ),
+            }
+        }
+    }
 
     inventory::submit! {
        SearchFilter::new(
@@ -123,21 +149,11 @@ mod contact_search {
                            .or(email.ilike(&pattern))
                            .or(phone_number.ilike(&pattern)),
                    )
-                   .select((
-                       id,
-                       first_name,
-                       last_name,
-                       email,
-                       phone_number
-                   ))
-                   .load::<(i32, String, String, String, String)>(conn)
+                   .select(ContactSearchResult::as_select())
+                   .load::<ContactSearchResult>(conn)
                    .map(|results| {
-                       results.into_iter().map(|(idd, first, last, em, phone)| {
-                           SearchResult {
-                               route: crate::Route::EditContact { id: idd },
-                               title: format!("{} {}", first, last),
-                               description: format!("Email: {}, Phone: {}", em, phone),
-                           }
+                       results.into_iter().map(|ctc| {
+                           SearchResult::from(ctc)
                        }).collect::<Vec<_>>()
                    })
            },
