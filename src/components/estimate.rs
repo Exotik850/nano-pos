@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
+use dioxus_primitives::select::SelectGroup;
 
 use crate::Route;
+use crate::components::select::{FormSelect, SelectGroupLabel, SelectOption};
 use crate::components::{input::FormInput, textarea::FormTextarea};
 use crate::models::{Contact, EstimateDetails, EstimateDraft, EstimateForm, EstimateProductForm, Product};
 
@@ -21,8 +23,6 @@ pub fn EstimateFormView(
         initial
             .as_ref()
             .and_then(|value| value.estimate.customer_id)
-            .map(|id| id.to_string())
-            .unwrap_or_default()
     });
     let doc_number = use_signal(|| {
         initial
@@ -57,21 +57,6 @@ pub fn EstimateFormView(
             class: "flex w-full max-w-5xl flex-col gap-6",
             onsubmit: move |event| {
                 event.prevent_default();
-                let customer = if customer_id().is_empty() {
-                    Ok(None)
-                } else {
-                    match customer_id().parse::<i32>() {
-                        Ok(value) if value > 0 => Ok(Some(value)),
-                        _ => Err("Select a valid customer.".to_string()),
-                    }
-                };
-                let customer = match customer {
-                    Ok(value) => value,
-                    Err(error) => {
-                        onsubmit.call(Err(error));
-                        return;
-                    }
-                };
                 if doc_number().trim().is_empty() {
                     onsubmit.call(Err("Document number is required.".to_string()));
                     return;
@@ -80,7 +65,7 @@ pub fn EstimateFormView(
                     .call(
                         Ok(EstimateDraft {
                             estimate: EstimateForm {
-                                customer_id: customer,
+                                customer_id: customer_id(),
                                 user_id: 0,
                                 doc_number: doc_number(),
                                 description: (!description().is_empty()).then(&*description),
@@ -97,22 +82,24 @@ pub fn EstimateFormView(
                     value: doc_number,
                 }
                 div { class: "flex w-full flex-col gap-1",
-                    label {
-                        class: "text-sm font-medium text-zinc-700 dark:text-zinc-300",
-                        r#for: "customer_id",
-                        "Customer"
-                    }
-                    select {
-                        class: "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
-                        id: "customer_id",
-                        value: "{customer_id}",
-                        onchange: move |event| customer_id.set(event.value()),
-                        option { value: "", "No customer" }
-                        for contact in contacts {
-                            option { value: "{contact.id}",
-                                "{contact.first_name} {contact.last_name} ({contact.email})"
-                            }
-                        }
+                    FormSelect::<i32> {
+                      label: "Customer",
+                      name: "customer_id",
+                      on_value_change: move |value| {
+                          customer_id.set(value);
+                      },
+                      SelectGroup {
+                          class: "w-full",
+                          SelectGroupLabel { "Select a customer" }
+                          for (index, contact) in contacts.into_iter().enumerate() {
+                              SelectOption::<i32> {
+                                  index,
+                                  value: contact.id,
+                                  text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
+                                  "{contact.first_name} {contact.last_name} ({contact.email})"
+                              }
+                          }
+                      }
                     }
                 }
             }
@@ -175,7 +162,9 @@ pub fn EstimateFormView(
                                     value: price,
                                 }
                             }
-                            TableCell { align_end: true, class: "bg-zinc-50 dark:bg-zinc-800/40",
+                            TableCell {
+                                align_end: true,
+                                class: "bg-zinc-50 dark:bg-zinc-800/40",
                                 Button {
                                     class: "whitespace-nowrap",
                                     r#type: "button",
@@ -189,14 +178,15 @@ pub fn EstimateFormView(
                                         let parsed_price = (!price().is_empty())
                                             .then(|| price().parse::<i32>().ok())
                                             .flatten();
-                                        lines.push(EstimateProductForm {
-                                            estimate_id: 0,
-                                            product_id,
-                                            quantity: parsed_quantity,
-                                            price: parsed_price,
-                                            tax_rate: None,
-                                            description: None,
-                                        });
+                                        lines
+                                            .push(EstimateProductForm {
+                                                estimate_id: 0,
+                                                product_id,
+                                                quantity: parsed_quantity,
+                                                price: parsed_price,
+                                                tax_rate: None,
+                                                description: None,
+                                            });
                                         selected_product.set(String::new());
                                         quantity.set("1".to_string());
                                         price.set("0".to_string());

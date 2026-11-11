@@ -26,3 +26,4 @@ pub mod textarea;
 
 mod searchbar;
 pub use searchbar::SearchBar;
+pub mod select;

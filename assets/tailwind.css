@@ -55,6 +55,7 @@
     --radius-lg: 0.5rem;
     --radius-xl: 0.75rem;
     --radius-2xl: 1rem;
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --animate-spin: spin 1s linear infinite;
@@ -305,6 +306,9 @@
   }
   .h-3\.5 {
     height: calc(var(--spacing) * 3.5);
+  }
+  .max-h-60 {
+    max-height: calc(var(--spacing) * 60);
   }
   .max-h-80 {
     max-height: calc(var(--spacing) * 80);
@@ -769,6 +773,10 @@
     --tw-duration: 300ms;
     transition-duration: 300ms;
   }
+  .ease-in {
+    --tw-ease: var(--ease-in);
+    transition-timing-function: var(--ease-in);
+  }
   .ease-in-out {
     --tw-ease: var(--ease-in-out);
     transition-timing-function: var(--ease-in-out);
@@ -827,6 +835,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-zinc-700);
+      }
+    }
+  }
+  .hover\:text-zinc-900 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-zinc-900);
       }
     }
   }
@@ -1055,6 +1070,15 @@
       }
     }
   }
+  .dark\:hover\:bg-zinc-700 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          background-color: var(--color-zinc-700);
+        }
+      }
+    }
+  }
   .dark\:hover\:bg-zinc-800 {
     @media (prefers-color-scheme: dark) {
       &:hover {
@@ -1072,6 +1096,15 @@
           @supports (color: color-mix(in lab, red, red)) {
             background-color: color-mix(in oklab, var(--color-zinc-800) 60%, transparent);
           }
+        }
+      }
+    }
+  }
+  .dark\:hover\:text-zinc-100 {
+    @media (prefers-color-scheme: dark) {
+      &:hover {
+        @media (hover: hover) {
+          color: var(--color-zinc-100);
         }
       }
     }
@@ -1095,16 +1128,6 @@
       &:focus-visible {
         background-color: var(--color-zinc-800);
       }
-    }
-  }
-  .\[\&\:\:-webkit-inner-spin-button\]\:appearance-none {
-    &::-webkit-inner-spin-button {
-      appearance: none;
-    }
-  }
-  .\[\&\:\:-webkit-outer-spin-button\]\:appearance-none {
-    &::-webkit-outer-spin-button {
-      appearance: none;
     }
   }
 }
