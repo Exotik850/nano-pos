@@ -196,39 +196,36 @@ mod invoice_server {
             })
         }
     }
+}
 
-    #[cfg(feature = "server")]
-    mod invoice_product_server {
-        use super::InvoiceProduct;
-        use crate::server::schema::invoice_product::dsl::*;
-        use diesel::prelude::*;
-        impl InvoiceProduct {
-            pub fn find(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<Self> {
-                invoice_product.find(id_).first(conn)
-            }
+#[cfg(feature = "server")]
+mod invoice_product_server {
+    use super::InvoiceProduct;
+    use crate::server::schema::invoice_product::dsl::*;
+    use diesel::prelude::*;
+    impl InvoiceProduct {
+        pub fn find(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<Self> {
+            invoice_product.find(id_).first(conn)
+        }
 
-            pub fn create(
-                conn: &mut diesel::PgConnection,
-                form: &Self,
-            ) -> diesel::QueryResult<Self> {
-                diesel::insert_into(invoice_product)
-                    .values(form)
-                    .get_result(conn)
-            }
+        pub fn create(conn: &mut diesel::PgConnection, form: &Self) -> diesel::QueryResult<Self> {
+            diesel::insert_into(invoice_product)
+                .values(form)
+                .get_result(conn)
+        }
 
-            pub fn update(
-                conn: &mut diesel::PgConnection,
-                id_: i32,
-                form: &Self,
-            ) -> diesel::QueryResult<Self> {
-                diesel::update(invoice_product.find(id_))
-                    .set(form)
-                    .get_result(conn)
-            }
+        pub fn update(
+            conn: &mut diesel::PgConnection,
+            id_: i32,
+            form: &Self,
+        ) -> diesel::QueryResult<Self> {
+            diesel::update(invoice_product.find(id_))
+                .set(form)
+                .get_result(conn)
+        }
 
-            pub fn delete(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<usize> {
-                diesel::delete(invoice_product.find(id_)).execute(conn)
-            }
+        pub fn delete(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<usize> {
+            diesel::delete(invoice_product.find(id_)).execute(conn)
         }
     }
 }
