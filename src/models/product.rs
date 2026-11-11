@@ -31,56 +31,42 @@ pub struct ProductForm {
 }
 
 #[cfg(feature = "server")]
-impl Product {
-    pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
-        use diesel::prelude::*;
+mod product_server {
+    use super::{Product, ProductForm};
+    use crate::server::schema::product::dsl::*;
+    use diesel::prelude::*;
 
-        crate::server::schema::product::table
-            .select(Self::as_select())
-            .order(crate::server::schema::product::name.asc())
-            .load(conn)
-    }
+    impl Product {
+        pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
+            product.order(name.asc()).load(conn)
+        }
 
-    pub fn find(conn: &mut diesel::PgConnection, product_id: i32) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
+        pub fn find(conn: &mut diesel::PgConnection, product_id: i32) -> diesel::QueryResult<Self> {
+            product.find(product_id).first(conn)
+        }
 
-        crate::server::schema::product::table
-            .select(Self::as_select())
-            .find(product_id)
-            .first(conn)
-    }
+        pub fn create(
+            conn: &mut diesel::PgConnection,
+            form: &ProductForm,
+        ) -> diesel::QueryResult<Self> {
+            diesel::insert_into(product).values(form).get_result(conn)
+        }
 
-    pub fn create(
-        conn: &mut diesel::PgConnection,
-        form: &ProductForm,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
+        pub fn update(
+            conn: &mut diesel::PgConnection,
+            product_id: i32,
+            form: &ProductForm,
+        ) -> diesel::QueryResult<Self> {
+            diesel::update(product.find(product_id))
+                .set((form, updated_at.eq(diesel::dsl::now)))
+                .get_result(conn)
+        }
 
-        diesel::insert_into(crate::server::schema::product::table)
-            .values(form)
-            .returning(Self::as_returning())
-            .get_result(conn)
-    }
-
-    pub fn update(
-        conn: &mut diesel::PgConnection,
-        product_id: i32,
-        form: &ProductForm,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        diesel::update(crate::server::schema::product::table.find(product_id))
-            .set((
-                form,
-                crate::server::schema::product::updated_at.eq(diesel::dsl::now),
-            ))
-            .returning(Self::as_returning())
-            .get_result(conn)
-    }
-
-    pub fn delete(conn: &mut diesel::PgConnection, product_id: i32) -> diesel::QueryResult<usize> {
-        use diesel::prelude::*;
-
-        diesel::delete(crate::server::schema::product::table.find(product_id)).execute(conn)
+        pub fn delete(
+            conn: &mut diesel::PgConnection,
+            product_id: i32,
+        ) -> diesel::QueryResult<usize> {
+            diesel::delete(product.find(product_id)).execute(conn)
+        }
     }
 }
