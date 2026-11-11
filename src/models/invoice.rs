@@ -56,6 +56,18 @@ pub struct InvoiceProduct {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "server", derive(Queryable, Selectable))]
+#[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice))]
+#[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
+pub struct InvoiceSearchResult {
+    pub id: i32,
+    pub doc_number: String,
+    pub description: Option<String>,
+    pub order_date: NaiveDateTime,
+    pub delivery_date: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct InvoiceDetails {
     pub invoice: Invoice,
     pub products: Vec<InvoiceProduct>,
@@ -191,4 +203,44 @@ impl InvoiceProduct {
         use diesel::prelude::*;
         diesel::delete(crate::server::schema::invoice_product::table.find(id)).execute(conn)
     }
+}
+
+#[cfg(feature = "server")]
+mod invoice_search {
+   use crate::{api::search::SearchResult, server::search::SearchFilter};
+
+use super::InvoiceSearchResult;
+   use diesel::prelude::*;
+use dioxus::server::inventory;
+
+   impl From<InvoiceSearchResult> for SearchResult {
+      fn from(value: InvoiceSearchResult) -> Self {
+          SearchResult {
+              route: crate::Route::EditInvoice { id: value.id },
+              title: format!("Invoice #{}", value.doc_number),
+              description: value.description.unwrap_or_default(),
+          }
+      }
+   }
+
+   inventory::submit! {
+      SearchFilter::new(
+        |query, conn| {
+            use crate::server::schema::invoice::dsl::*;
+            let pattern = format!("%{}%", query);
+            invoice
+                .filter(
+                    doc_number.ilike(&pattern)
+                        .or(description.ilike(&pattern)),
+                )
+                .select(InvoiceSearchResult::as_select())
+                .load::<InvoiceSearchResult>(conn)
+                .map(|results| {
+                    results.into_iter().map(|inv| {
+                        SearchResult::from(inv)
+                    }).collect::<Vec<_>>()
+                })
+        }
+      )
+   }
 }
