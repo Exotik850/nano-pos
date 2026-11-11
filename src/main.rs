@@ -1,9 +1,8 @@
 // The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
 // need dioxus
-use dioxus::prelude::*;
-
 use crate::{auth::AuthGaurd, views::Sidebar};
 use auth::AuthProvider;
+use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use views::{
     EditContact, EditInvoice, EditProduct, Home, IndexContacts, IndexInvoices, IndexProducts,
@@ -124,7 +123,33 @@ const DX_COMPONENTS_CSS: Asset = asset!("/assets/dx-components-theme.css");
 fn main() {
     // The `launch` function is the main entry point for a dioxus app. It takes a component and renders it with the platform feature
     // you have enabled
+    #[cfg(not(feature = "server"))]
     dioxus::launch(App);
+    #[cfg(feature = "server")]
+    {
+        use dioxus::{
+            fullstack::extract::Request,
+            server::axum::{self, middleware::Next},
+        };
+        dioxus::serve(|| async {
+            let router = dioxus::server::router(App).layer(axum::middleware::from_fn(
+                |req: Request, next: Next| async {
+                    let uri = req.uri().clone();
+                    let ignore =
+                        uri.path().starts_with("/assets") || uri.path().starts_with("/wasm");
+                    if ignore {
+                        return next.run(req).await;
+                    }
+                    let start = std::time::Instant::now();
+                    let out = next.run(req).await;
+                    let duration = start.elapsed();
+                    info!("{uri} took {duration:?}");
+                    out
+                },
+            ));
+            Ok(router)
+        });
+    }
 }
 
 /// App is the main component of our app. Components are the building blocks of dioxus apps. Each component is a function
