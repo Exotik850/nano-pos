@@ -31,3 +31,6 @@ pub use contacts::{EditContact, IndexContacts, NewContact};
 
 mod invoices;
 pub use invoices::{EditInvoice, IndexInvoices, NewInvoice};
+
+mod estimates;
+pub use estimates::{EditEstimate, IndexEstimates, NewEstimate};

@@ -5,6 +5,16 @@ body {
     margin: 20px;
 }
 
+.remove-arrow::-webkit-outer-spin-button,
+.remove-arrow::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.remove-arrow[type=number] {
+    -moz-appearance: textfield;
+}
+
 .page-transition {
     animation: page-transition-in 260ms ease-out both;
 }

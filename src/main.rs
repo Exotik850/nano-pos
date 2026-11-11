@@ -5,8 +5,9 @@ use auth::AuthProvider;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use views::{
-    EditContact, EditInvoice, EditProduct, Home, IndexContacts, IndexInvoices, IndexProducts,
-    Login, Navbar, NewContact, NewInvoice, NewProduct, Signup,
+    EditContact, EditEstimate, EditInvoice, EditProduct, Home, IndexContacts, IndexEstimates,
+    IndexInvoices, IndexProducts, Login, Navbar, NewContact, NewEstimate, NewInvoice, NewProduct,
+    Signup,
 };
 
 mod auth;
@@ -21,7 +22,7 @@ mod server;
 pub mod models;
 
 mod api;
-pub use api::{contacts, invoices, products};
+pub use api::{contacts, estimates, invoices, products};
 
 #[component]
 fn LoadingFallback() -> Element {
@@ -110,6 +111,12 @@ enum Route {
         NewInvoice {},
         #[route("/invoices/:id/edit")]
         EditInvoice { id: i32 },
+        #[route("/estimates")]
+        IndexEstimates {},
+        #[route("/estimates/new")]
+        NewEstimate {},
+        #[route("/estimates/:id/edit")]
+        EditEstimate { id: i32 },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

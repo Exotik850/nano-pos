@@ -69,7 +69,10 @@ pub fn TableInput(
 ) -> Element {
     rsx! {
         input {
-            class: "w-full rounded-md border border-transparent bg-transparent px-2.5 py-2 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 hover:bg-zinc-50 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60 dark:focus:border-zinc-400 dark:focus:ring-zinc-700",
+            class: "w-full text-right rounded-md border border-transparent bg-transparent px-2.5 py-2 text-sm text-zinc-900
+            outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 hover:bg-zinc-50 focus:border-zinc-500 focus:ring-2
+            focus:ring-zinc-200 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60 dark:focus:border-zinc-400 dark:focus:ring-zinc-700
+            remove-arrow",
             name,
             placeholder,
             r#type,

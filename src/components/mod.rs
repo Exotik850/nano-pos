@@ -13,6 +13,9 @@ pub use contact::ContactFormView;
 mod invoice;
 pub use invoice::InvoiceFormView;
 
+mod estimate;
+pub use estimate::EstimateFormView;
+
 mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};
 pub use table::{TableInput, TableSelect};

@@ -56,6 +56,7 @@ pub fn Sidebar() -> Element {
                     SidebarLink { to: Route::IndexProducts {}, "Products" }
                     SidebarLink { to: Route::IndexContacts {}, "Contacts" }
                     SidebarLink { to: Route::IndexInvoices {}, "Invoices" }
+                    SidebarLink { to: Route::IndexEstimates {}, "Estimates" }
                 }
             }
             main { class: "min-w-0 flex-1", Outlet::<Route> {} }

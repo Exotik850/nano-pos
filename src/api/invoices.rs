@@ -1,6 +1,8 @@
 use dioxus::{fullstack::Form, prelude::*};
 
 use crate::models::{Invoice, InvoiceDetails, InvoiceProduct, InvoiceDraft};
+#[cfg(feature = "server")]
+use crate::models::{InvoiceForm, InvoiceProductForm};
 
 #[cfg(feature = "server")]
 fn require_invoice_session(
