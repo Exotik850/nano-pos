@@ -35,8 +35,8 @@ pub fn Sidebar() -> Element {
     rsx! {
         div { class: "flex min-h-screen w-full transition-all duration-300",
             aside {
-                class: "flex w-1/3 shrink-0 flex-col gap-6 border-r border-zinc-200 px-4 py-4 dark:border-zinc-700 transition-all duration-300 ease-in-out",
-                class: if hidden() { "pointer-events-none !w-0 -translate-x-full overflow-hidden !border-0 !px-0 opacity-0" } else { "translate-x-0 opacity-100" },
+                class: "flex sm:w-1/3 md:w-1/4 lg:w-1/7 xl:w-1/8 shrink-0 flex-col gap-6 border-r border-zinc-200 px-4 py-4 dark:border-zinc-700 transition-all duration-300 ease-in-out",
+                class: if hidden() { "pointer-events-none !w-0 -translate-x-full overflow-hidden !border-0 !px-0 opacity-0 aria-hidden" } else { "translate-x-0 opacity-100" },
                 div { class: "flex items-center justify-between",
                     h2 { class: "text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 pr-2",
                         "Workspace"
