@@ -11,7 +11,8 @@ diesel::table! {
         phone_number -> Varchar,
         #[max_length = 255]
         email -> Varchar,
-        message -> Nullable<Text>,
+        #[max_length = 3000]
+        message -> Nullable<Varchar>,
         #[max_length = 255]
         street -> Varchar,
         #[max_length = 100]
@@ -34,7 +35,8 @@ diesel::table! {
         user_id -> Int4,
         #[max_length = 255]
         doc_number -> Varchar,
-        description -> Nullable<Text>,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
         order_date -> Timestamp,
         delivery_date -> Nullable<Timestamp>,
         created_at -> Timestamp,
@@ -50,7 +52,8 @@ diesel::table! {
         quantity -> Int4,
         price -> Nullable<Int4>,
         tax_rate -> Nullable<Float8>,
-        description -> Nullable<Text>,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
     }
 }
 
@@ -61,7 +64,8 @@ diesel::table! {
         name -> Varchar,
         #[max_length = 255]
         sku -> Varchar,
-        description -> Nullable<Text>,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
         price -> Int4,
         quantity -> Int4,
         created_at -> Timestamp,

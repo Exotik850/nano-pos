@@ -4,7 +4,7 @@ create table invoice (
   customer_id INT NOT NULL REFERENCES contact(id),
   user_id INT NOT NULL REFERENCES users(id),
   doc_number VARCHAR(255) NOT NULL,
-  description TEXT,
+  description VARCHAR(3000),
   order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   delivery_date TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,5 +18,5 @@ create table invoice_product (
   quantity INT NOT NULL,
   price INT,
   tax_rate DOUBLE PRECISION,
-  description TEXT
+  description VARCHAR(3000)
 );
