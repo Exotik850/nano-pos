@@ -1,21 +1,14 @@
 use chrono::NaiveDateTime;
 use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
 
 use crate::components::{input::FormInput, textarea::FormTextarea};
-use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProductForm, Product};
+use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProductForm, Product, InvoiceDraft};
 
 use super::{
     Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
     TableInput, TableRow, TableSelect,
 };
 use crate::Route;
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-pub struct InvoiceDraft {
-    pub form: InvoiceForm,
-    pub products: Vec<InvoiceProductForm>,
-}
 
 fn datetime_input(value: NaiveDateTime) -> String {
     value.format("%Y-%m-%dT%H:%M").to_string()

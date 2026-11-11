@@ -1,7 +1,6 @@
-use crate::{Route, api::search::SearchResult};
+use crate::{api::search::SearchResult};
 use diesel::prelude::*;
 use dioxus::server::inventory;
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy)]
 pub struct SearchFilter {

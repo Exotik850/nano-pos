@@ -11,7 +11,7 @@ mod contact;
 pub use contact::ContactFormView;
 
 mod invoice;
-pub use invoice::{InvoiceDraft, InvoiceFormView};
+pub use invoice::InvoiceFormView;
 
 mod table;
 pub use table::{Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow};

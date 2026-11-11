@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
 
 use crate::Route;
-use crate::components::{InvoiceDraft, InvoiceFormView};
+use crate::components::InvoiceFormView;
 use crate::contacts::list_contacts;
 use crate::invoices::{get_invoice, update_invoice};
+use crate::models::InvoiceDraft;
 use crate::products::list_products;
 
 #[component]

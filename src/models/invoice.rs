@@ -95,6 +95,12 @@ pub struct InvoiceSearchResult {
     pub delivery_date: Option<NaiveDateTime>,
 }
 
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct InvoiceDraft {
+    pub form: InvoiceForm,
+    pub products: Vec<InvoiceProductForm>,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct InvoiceDetails {
     pub invoice: Invoice,
