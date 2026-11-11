@@ -3,18 +3,18 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::components::{input::FormInput, textarea::FormTextarea};
-use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProduct, Product};
+use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProductForm, Product};
 
 use super::{
     Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
-    TableRow,
+    TableInput, TableRow, TableSelect,
 };
 use crate::Route;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub struct InvoiceDraft {
     pub form: InvoiceForm,
-    pub products: Vec<InvoiceProduct>,
+    pub products: Vec<InvoiceProductForm>,
 }
 
 fn datetime_input(value: NaiveDateTime) -> String {
@@ -59,17 +59,16 @@ pub fn InvoiceFormView(
             .and_then(|value| value.invoice.delivery_date.map(datetime_input))
             .unwrap_or_default()
     });
-    let mut lines = use_signal(|| {
+    let mut lines: Signal<Vec<InvoiceProductForm>> = use_signal(|| {
         initial
             .as_ref()
             .map(|value| value.products.clone())
+            .map(|prods| prods.into_iter().map(|l: crate::models::InvoiceProduct| l.into()).collect())
             .unwrap_or_default()
     });
     let mut selected_product = use_signal(String::new);
     let mut quantity = use_signal(|| "1".to_string());
-    let mut price = use_signal(String::new);
-    let tax_rate = use_signal(String::new);
-    let line_description = use_signal(String::new);
+    let mut price = use_signal(|| "0".to_string());
 
     rsx! {
         form {
@@ -186,64 +185,6 @@ pub fn InvoiceFormView(
                         "Manage products"
                     }
                 }
-                div { class: "grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]",
-                    select {
-                        class: "rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
-                        value: "{selected_product}",
-                        onchange: move |event| selected_product.set(event.value()),
-                        option { value: "", "Select a product" }
-                        for product in products.iter() {
-                            option { value: "{product.id}", "{product.name} ({product.sku})" }
-                        }
-                    }
-                    FormInput {
-                        label: "Quantity",
-                        name: "line_quantity",
-                        r#type: "number",
-                        required: true,
-                        value: quantity,
-                    }
-                    FormInput {
-                        label: "Price (cents)",
-                        name: "line_price",
-                        r#type: "number",
-                        value: price,
-                    }
-                    Button {
-                        class: "h-10",
-                        r#type: "button",
-                        onclick: move |_| {
-                            let Ok(product_id) = selected_product().parse::<i32>() else {
-                                return;
-                            };
-                            if lines().iter().any(|line| line.product_id == product_id) {
-                                return;
-                            }
-                            let Ok(parsed_quantity) = quantity().parse::<i32>() else {
-                                return;
-                            };
-                            let parsed_price = (!price().is_empty())
-                                .then(|| price().parse::<i32>().ok())
-                                .flatten();
-                            lines
-                                .push(InvoiceProduct {
-                                    id: 0,
-                                    invoice_id: 0,
-                                    product_id,
-                                    quantity: parsed_quantity,
-                                    price: parsed_price,
-                                    tax_rate: (!tax_rate().is_empty())
-                                        .then(|| tax_rate().parse::<f64>().ok())
-                                        .flatten(),
-                                    description: (!line_description().is_empty()).then(&*line_description),
-                                });
-                            selected_product.set(String::new());
-                            quantity.set("1".to_string());
-                            price.set(String::new());
-                        },
-                        "Add"
-                    }
-                }
                 Table {
                     TableHead {
                         tr {
@@ -254,6 +195,60 @@ pub fn InvoiceFormView(
                         }
                     }
                     TableBody {
+                        TableRow {
+                            TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
+                                TableSelect { value: selected_product,
+                                    option { value: "", "Select" }
+                                    for product in products.iter() {
+                                        option { value: "{product.id}", "{product.name} ({product.sku})" }
+                                    }
+                                }
+                            }
+                            TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
+                                TableInput {
+                                    name: "line_quantity",
+                                    r#type: "number",
+                                    placeholder: "1",
+                                    value: quantity,
+                                }
+                            }
+                            TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
+                                TableInput {
+                                    name: "line_price",
+                                    r#type: "number",
+                                    value: price,
+                                }
+                            }
+                            TableCell { align_end: true, class: "bg-zinc-50 dark:bg-zinc-800/40",
+                                Button {
+                                    class: "whitespace-nowrap",
+                                    r#type: "button",
+                                    onclick: move |_| {
+                                        let Ok(product_id) = selected_product().parse::<i32>() else {
+                                            return;
+                                        };
+                                        let Ok(parsed_quantity) = quantity().parse::<i32>() else {
+                                            return;
+                                        };
+                                        let parsed_price = (!price().is_empty())
+                                            .then(|| price().parse::<i32>().ok())
+                                            .flatten();
+                                        lines.push(InvoiceProductForm {
+                                            invoice_id: 0,
+                                            product_id,
+                                            quantity: parsed_quantity,
+                                            price: parsed_price,
+                                            tax_rate: None,
+                                            description: None,
+                                        });
+                                        selected_product.set(String::new());
+                                        quantity.set("1".to_string());
+                                        price.set("0".to_string());
+                                    },
+                                    "Add line"
+                                }
+                            }
+                        }
                         for line in lines() {
                             {
                                 let product = products.iter().find(|product| product.id == line.product_id);

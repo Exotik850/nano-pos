@@ -56,6 +56,37 @@ pub struct InvoiceProduct {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(
+    feature = "server",
+    derive(Insertable, AsChangeset, Associations)
+)]
+#[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice_product))]
+#[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
+#[cfg_attr(feature = "server", diesel(belongs_to(Invoice)))]
+#[cfg_attr(feature = "server", diesel(belongs_to(crate::models::Product)))]
+pub struct InvoiceProductForm {
+    pub invoice_id: i32,
+    pub product_id: i32,
+    pub quantity: i32,
+    pub price: Option<i32>,
+    pub tax_rate: Option<f64>,
+    pub description: Option<String>,
+}
+
+impl From<InvoiceProduct> for InvoiceProductForm {
+    fn from(product: InvoiceProduct) -> Self {
+        Self {
+            invoice_id: product.invoice_id,
+            product_id: product.product_id,
+            quantity: product.quantity,
+            price: product.price,
+            tax_rate: product.tax_rate,
+            description: product.description,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[cfg_attr(feature = "server", derive(Queryable, Selectable))]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
@@ -108,7 +139,7 @@ impl Invoice {
     pub fn create(
         conn: &mut diesel::PgConnection,
         form: &InvoiceForm,
-        products: &[InvoiceProduct],
+        products: Vec<InvoiceProductForm>,
     ) -> diesel::QueryResult<Self> {
         use diesel::prelude::*;
 
@@ -119,7 +150,9 @@ impl Invoice {
                 .get_result::<i32>(conn)?;
             if !products.is_empty() {
                 diesel::insert_into(crate::server::schema::invoice_product::table)
-                    .values(products)
+                    .values(
+                      products.into_iter().map(|mut p| { p.invoice_id = invoice_id; p }).collect::<Vec<_>>(),
+                    )
                     .execute(conn)?;
             }
             Self::find(conn, invoice_id)
@@ -130,7 +163,7 @@ impl Invoice {
         conn: &mut diesel::PgConnection,
         invoice_id: i32,
         form: &InvoiceForm,
-        products: &[InvoiceProduct],
+        products: Vec<InvoiceProductForm>,
     ) -> diesel::QueryResult<Self> {
         use diesel::prelude::*;
 
@@ -148,7 +181,9 @@ impl Invoice {
             .execute(conn)?;
             if !products.is_empty() {
                 diesel::insert_into(crate::server::schema::invoice_product::table)
-                    .values(products)
+                    .values(
+                      products.into_iter().map(|mut p| { p.invoice_id = invoice_id; p }).collect::<Vec<_>>(),
+                    )
                     .execute(conn)?;
             }
             Self::find(conn, invoice_id)

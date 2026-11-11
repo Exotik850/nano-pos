@@ -2,7 +2,7 @@ use dioxus::{fullstack::Form, prelude::*};
 
 use crate::components::InvoiceDraft;
 #[cfg(feature = "server")]
-use crate::models::InvoiceForm;
+use crate::models::{InvoiceForm, InvoiceProductForm};
 use crate::models::{Invoice, InvoiceDetails, InvoiceProduct};
 
 #[cfg(feature = "server")]
@@ -46,7 +46,7 @@ pub async fn create_invoice(
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
     let mut conn = crate::server::db::establish_connection();
-    let invoice = Invoice::create(&mut conn, &form, &products)
+    let invoice = Invoice::create(&mut conn, &form, products)
         .map_err(|error| ServerFnError::Response(format!("Could not create invoice: {error}")))?;
     Ok(invoice)
 }
@@ -56,17 +56,14 @@ pub async fn update_invoice(
     invoice_id: i32,
     InvoiceDraft {
         mut form,
-        mut products,
+        products,
     }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
-    products
-        .iter_mut()
-        .for_each(|product| product.invoice_id = invoice_id);
     let mut conn = crate::server::db::establish_connection();
-    Invoice::update(&mut conn, invoice_id, &form, &products)
+    Invoice::update(&mut conn, invoice_id, &form, products)
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
 }
 
@@ -120,7 +117,7 @@ pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
 }
 
 #[cfg(feature = "server")]
-fn validate_invoice(form: &InvoiceForm, products: &[InvoiceProduct]) -> Result<(), ServerFnError> {
+fn validate_invoice(form: &InvoiceForm, products: &[InvoiceProductForm]) -> Result<(), ServerFnError> {
     use chrono::NaiveDateTime;
     if form.doc_number.trim().is_empty() {
         return Err(ServerFnError::Response(
