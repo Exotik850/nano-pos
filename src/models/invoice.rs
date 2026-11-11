@@ -56,10 +56,7 @@ pub struct InvoiceProduct {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(
-    feature = "server",
-    derive(Insertable, AsChangeset, Associations)
-)]
+#[cfg_attr(feature = "server", derive(Insertable, AsChangeset, Associations))]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice_product))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(Invoice)))]
@@ -105,177 +102,173 @@ pub struct InvoiceDetails {
 }
 
 #[cfg(feature = "server")]
-impl Invoice {
-    pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
-        use diesel::prelude::*;
+mod invoice_server {
+    use super::{Invoice, InvoiceForm, InvoiceProduct, InvoiceProductForm};
+    use crate::server::schema::invoice::dsl::*;
+    use crate::server::schema::invoice_product::dsl::*;
+    use diesel::prelude::*;
 
-        crate::server::schema::invoice::table
-            .select(Self::as_select())
-            .order(crate::server::schema::invoice::order_date.desc())
-            .load(conn)
-    }
+    impl Invoice {
+        pub fn all(conn: &mut diesel::PgConnection) -> diesel::QueryResult<Vec<Self>> {
+            invoice
+                .select(Self::as_select())
+                .order(order_date.desc())
+                .load(conn)
+        }
 
-    pub fn find(conn: &mut diesel::PgConnection, invoice_id: i32) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
+        pub fn find(conn: &mut diesel::PgConnection, inv_id: i32) -> diesel::QueryResult<Self> {
+            invoice.select(Self::as_select()).find(inv_id).first(conn)
+        }
 
-        crate::server::schema::invoice::table
-            .select(Self::as_select())
-            .find(invoice_id)
-            .first(conn)
-    }
+        pub fn products(
+            conn: &mut diesel::PgConnection,
+            inv_id: i32,
+        ) -> diesel::QueryResult<Vec<InvoiceProduct>> {
+            invoice_product
+                .filter(invoice_id.eq(inv_id))
+                .order(product_id.asc())
+                .load(conn)
+        }
 
-    pub fn products(
-        conn: &mut diesel::PgConnection,
-        invoice_id: i32,
-    ) -> diesel::QueryResult<Vec<InvoiceProduct>> {
-        use diesel::prelude::*;
+        pub fn create(
+            conn: &mut diesel::PgConnection,
+            form: &InvoiceForm,
+            products: Vec<InvoiceProductForm>,
+        ) -> diesel::QueryResult<Self> {
+            conn.transaction(|conn| {
+                let inv_id = diesel::insert_into(invoice)
+                    .values(form)
+                    .returning(crate::server::schema::invoice::id)
+                    .get_result::<i32>(conn)?;
+                if !products.is_empty() {
+                    diesel::insert_into(invoice_product)
+                        .values(
+                            products
+                                .into_iter()
+                                .map(|mut p| {
+                                    p.invoice_id = inv_id;
+                                    p
+                                })
+                                .collect::<Vec<_>>(),
+                        )
+                        .execute(conn)?;
+                }
+                Self::find(conn, inv_id)
+            })
+        }
 
-        crate::server::schema::invoice_product::table
-            .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id))
-            .order(crate::server::schema::invoice_product::product_id.asc())
-            .load(conn)
-    }
+        pub fn update(
+            conn: &mut diesel::PgConnection,
+            inv_id: i32,
+            form: &InvoiceForm,
+            products: Vec<InvoiceProductForm>,
+        ) -> diesel::QueryResult<Self> {
+            use crate::server::schema::invoice::dsl::*;
+            use crate::server::schema::invoice_product::dsl::*;
+            use diesel::prelude::*;
 
-    pub fn create(
-        conn: &mut diesel::PgConnection,
-        form: &InvoiceForm,
-        products: Vec<InvoiceProductForm>,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        conn.transaction(|conn| {
-            let invoice_id = diesel::insert_into(crate::server::schema::invoice::table)
-                .values(form)
-                .returning(crate::server::schema::invoice::id)
-                .get_result::<i32>(conn)?;
-            if !products.is_empty() {
-                diesel::insert_into(crate::server::schema::invoice_product::table)
-                    .values(
-                      products.into_iter().map(|mut p| { p.invoice_id = invoice_id; p }).collect::<Vec<_>>(),
-                    )
+            conn.transaction(|conn| {
+                diesel::update(invoice.find(inv_id))
+                    .set((form, updated_at.eq(diesel::dsl::now)))
                     .execute(conn)?;
+                diesel::delete(invoice_product.filter(invoice_id.eq(inv_id))).execute(conn)?;
+                if !products.is_empty() {
+                    diesel::insert_into(invoice_product)
+                        .values(
+                            products
+                                .into_iter()
+                                .map(|mut p| {
+                                    p.invoice_id = inv_id;
+                                    p
+                                })
+                                .collect::<Vec<_>>(),
+                        )
+                        .execute(conn)?;
+                }
+                Self::find(conn, inv_id)
+            })
+        }
+
+        pub fn delete(conn: &mut diesel::PgConnection, inv_id: i32) -> diesel::QueryResult<usize> {
+            conn.transaction(|conn| {
+                diesel::delete(invoice_product.filter(invoice_id.eq(inv_id))).execute(conn)?;
+                diesel::delete(invoice.find(inv_id)).execute(conn)
+            })
+        }
+    }
+
+    #[cfg(feature = "server")]
+    mod invoice_product_server {
+        use super::InvoiceProduct;
+        use crate::server::schema::invoice_product::dsl::*;
+        use diesel::prelude::*;
+        impl InvoiceProduct {
+            pub fn find(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<Self> {
+                invoice_product.find(id_).first(conn)
             }
-            Self::find(conn, invoice_id)
-        })
-    }
 
-    pub fn update(
-        conn: &mut diesel::PgConnection,
-        invoice_id: i32,
-        form: &InvoiceForm,
-        products: Vec<InvoiceProductForm>,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        conn.transaction(|conn| {
-            diesel::update(crate::server::schema::invoice::table.find(invoice_id))
-                .set((
-                    form,
-                    crate::server::schema::invoice::updated_at.eq(diesel::dsl::now),
-                ))
-                .execute(conn)?;
-            diesel::delete(
-                crate::server::schema::invoice_product::table
-                    .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id)),
-            )
-            .execute(conn)?;
-            if !products.is_empty() {
-                diesel::insert_into(crate::server::schema::invoice_product::table)
-                    .values(
-                      products.into_iter().map(|mut p| { p.invoice_id = invoice_id; p }).collect::<Vec<_>>(),
-                    )
-                    .execute(conn)?;
+            pub fn create(
+                conn: &mut diesel::PgConnection,
+                form: &Self,
+            ) -> diesel::QueryResult<Self> {
+                diesel::insert_into(invoice_product)
+                    .values(form)
+                    .get_result(conn)
             }
-            Self::find(conn, invoice_id)
-        })
-    }
 
-    pub fn delete(conn: &mut diesel::PgConnection, invoice_id: i32) -> diesel::QueryResult<usize> {
-        use diesel::prelude::*;
+            pub fn update(
+                conn: &mut diesel::PgConnection,
+                id_: i32,
+                form: &Self,
+            ) -> diesel::QueryResult<Self> {
+                diesel::update(invoice_product.find(id_))
+                    .set(form)
+                    .get_result(conn)
+            }
 
-        conn.transaction(|conn| {
-            diesel::delete(
-                crate::server::schema::invoice_product::table
-                    .filter(crate::server::schema::invoice_product::invoice_id.eq(invoice_id)),
-            )
-            .execute(conn)?;
-            diesel::delete(crate::server::schema::invoice::table.find(invoice_id)).execute(conn)
-        })
-    }
-}
-
-#[cfg(feature = "server")]
-impl InvoiceProduct {
-    pub fn find(conn: &mut diesel::PgConnection, id: i32) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        crate::server::schema::invoice_product::table
-            .find(id)
-            .first(conn)
-    }
-
-    pub fn create(conn: &mut diesel::PgConnection, form: &Self) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        diesel::insert_into(crate::server::schema::invoice_product::table)
-            .values(form)
-            .get_result(conn)
-    }
-
-    pub fn update(
-        conn: &mut diesel::PgConnection,
-        id: i32,
-        form: &Self,
-    ) -> diesel::QueryResult<Self> {
-        use diesel::prelude::*;
-
-        diesel::update(crate::server::schema::invoice_product::table.find(id))
-            .set(form)
-            .get_result(conn)
-    }
-
-    pub fn delete(conn: &mut diesel::PgConnection, id: i32) -> diesel::QueryResult<usize> {
-        use diesel::prelude::*;
-        diesel::delete(crate::server::schema::invoice_product::table.find(id)).execute(conn)
+            pub fn delete(conn: &mut diesel::PgConnection, id_: i32) -> diesel::QueryResult<usize> {
+                diesel::delete(invoice_product.find(id_)).execute(conn)
+            }
+        }
     }
 }
 
 #[cfg(feature = "server")]
 mod invoice_search {
-   use crate::{api::search::SearchResult, server::search::SearchFilter};
+    use crate::{api::search::SearchResult, server::search::SearchFilter};
 
-use super::InvoiceSearchResult;
-   use diesel::prelude::*;
-use dioxus::server::inventory;
+    use super::InvoiceSearchResult;
+    use diesel::prelude::*;
+    use dioxus::server::inventory;
 
-   impl From<InvoiceSearchResult> for SearchResult {
-      fn from(value: InvoiceSearchResult) -> Self {
-          SearchResult {
-              route: crate::Route::EditInvoice { id: value.id },
-              title: format!("Invoice #{}", value.doc_number),
-              description: value.description.unwrap_or_default(),
-          }
-      }
-   }
-
-   inventory::submit! {
-      SearchFilter::new(
-        |query, conn| {
-            use crate::server::schema::invoice::dsl::*;
-            let pattern = format!("%{}%", query);
-            invoice
-                .filter(
-                    doc_number.ilike(&pattern)
-                        .or(description.ilike(&pattern)),
-                )
-                .select(InvoiceSearchResult::as_select())
-                .load::<InvoiceSearchResult>(conn)
-                .map(|results| {
-                    results.into_iter().map(|inv| {
-                        SearchResult::from(inv)
-                    }).collect::<Vec<_>>()
-                })
+    impl From<InvoiceSearchResult> for SearchResult {
+        fn from(value: InvoiceSearchResult) -> Self {
+            SearchResult {
+                route: crate::Route::EditInvoice { id: value.id },
+                title: format!("Invoice #{}", value.doc_number),
+                description: value.description.unwrap_or_default(),
+            }
         }
-      )
-   }
+    }
+
+    inventory::submit! {
+       SearchFilter::new(
+         |query, conn| {
+             use crate::server::schema::invoice::dsl::*;
+             let pattern = format!("%{}%", query);
+             invoice
+                 .filter(
+                     doc_number.ilike(&pattern)
+                         .or(description.ilike(&pattern)),
+                 )
+                 .select(InvoiceSearchResult::as_select())
+                 .load::<InvoiceSearchResult>(conn)
+                 .map(|results| {
+                     results.into_iter().map(|inv| {
+                         SearchResult::from(inv)
+                     }).collect::<Vec<_>>()
+                 })
+         }
+       )
+    }
 }
