@@ -149,9 +149,10 @@ fn test_session_cookie_round_trip() {
 
 /// Validate a session cookie value, returning the user id when the signature
 /// checks out and the session has not expired.
-fn parse_session_cookie(value: &str) -> Option<i32> {
+fn parse_session_cookie(value: impl std::fmt::Display) -> Option<i32> {
+    let value = value.to_string();
     let mut jar = CookieJar::new();
-    jar.add_original(Cookie::parse(format!("{SESSION_COOKIE}={value}")).ok()?);
+    jar.add((SESSION_COOKIE, value));
     let payload: SessionPayload =
         serde_json::from_str(jar.signed(&session_key()).get(SESSION_COOKIE)?.value()).ok()?;
     if Utc::now().timestamp() > payload.exp {
@@ -175,13 +176,14 @@ fn read_session_cookie(headers: &HeaderMap) -> Option<String> {
 fn set_session_cookie(user_id: i32) {
     let value = create_session_cookie(user_id);
     let expires = Utc::now() + TimeDelta::days(SESSION_TTL_DAYS);
-    let cookie = format!(
-        "{SESSION_COOKIE}={value}; Path=/; HttpOnly; SameSite=Strict; Max-Age={}; Expires={}; Secure",
-        SESSION_TTL_DAYS * 24 * 60 * 60,
-        expires.format("%a, %d %b %Y %H:%M:%S GMT")
-    );
+    let cookie = Cookie::build((SESSION_COOKIE, value))
+        .path("/")
+        .http_only(true)
+        .secure(true)
+        .same_site(cookie::SameSite::Strict)
+        .expires(cookie::time::OffsetDateTime::from_unix_timestamp(expires.timestamp()).unwrap());
     if let Some(ctx) = FullstackContext::current()
-        && let Ok(value) = HeaderValue::from_str(&cookie)
+        && let Ok(value) = HeaderValue::from_str(&cookie.to_string())
     {
         ctx.add_response_header(SET_COOKIE, value);
     }
@@ -189,12 +191,14 @@ fn set_session_cookie(user_id: i32) {
 
 /// Attach a `Set-Cookie` header that expires (clears) the session cookie.
 fn clear_session_cookie() {
-    let cookie = format!(
-        "{SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0; \
-         Expires=Thu, 01 Jan 1970 00:00:00 GMT"
-    );
+    let cookie = cookie::Cookie::build(SESSION_COOKIE)
+        .path("/")
+        .http_only(true)
+        .same_site(cookie::SameSite::Strict)
+        .secure(true)
+        .removal();
     if let Some(ctx) = FullstackContext::current() {
-        let Ok(value) = HeaderValue::from_str(&cookie) else {
+        let Ok(value) = HeaderValue::from_str(&cookie.to_string()) else {
             warn!("Failed to create Set-Cookie header to clear session cookie");
             return;
         };
