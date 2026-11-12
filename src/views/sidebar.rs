@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsLeft;
 
 use crate::Route;
-use crate::components::{Button, ButtonVariant};
+use crate::components::{AuthContext, Button, ButtonVariant};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct Hidden(pub Signal<bool>);
@@ -20,7 +20,7 @@ pub fn SidebarLink(#[props(into)] to: NavigationTarget, children: Element) -> El
 
 #[component]
 pub fn Sidebar() -> Element {
-    let auth = use_context::<crate::auth::AuthContext>();
+    let auth = use_context::<AuthContext>();
     let mut hidden = use_signal(|| true);
     use_context_provider(|| Hidden(hidden));
 

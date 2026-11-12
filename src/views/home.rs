@@ -1,6 +1,5 @@
 use crate::Route;
-use crate::auth::AuthContext;
-use crate::components::{ButtonLink, ButtonVariant};
+use crate::components::{AuthContext, ButtonLink, ButtonVariant};
 use dioxus::prelude::*;
 
 /// The Home page component that will be rendered when the current route is `[Route::Home]`

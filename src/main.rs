@@ -1,18 +1,17 @@
 // The dioxus prelude contains a ton of common items used in dioxus apps. It's a good idea to import wherever you
 // need dioxus
-use crate::{auth::AuthGaurd, views::Sidebar};
-use auth::AuthProvider;
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use views::{
     EditContact, EditEstimate, EditInvoice, EditProduct, Home, IndexContacts, IndexEstimates,
     IndexInvoices, IndexProducts, Login, Navbar, NewContact, NewEstimate, NewInvoice, NewProduct,
-    Signup,
+    Sidebar, Signup,
 };
 
-mod auth;
 /// Define a components module that contains all shared components for our app.
 mod components;
+use components::{AuthGaurd, AuthProvider};
+
 /// Define a views module that contains the UI for all Layouts and Routes for our app.
 mod views;
 
@@ -139,25 +138,26 @@ fn main() {
             server::axum::{self, middleware::Next},
         };
         dioxus::serve(|| async {
-            use dioxus::server::axum::Extension;
             use crate::server::auth::session_key;
+            use dioxus::server::axum::Extension;
 
-
-            let router = dioxus::server::router(App).layer(axum::middleware::from_fn(
-                |req: Request, next: Next| async {
-                    let uri = req.uri().clone();
-                    let ignore =
-                        uri.path().starts_with("/assets") || uri.path().starts_with("/wasm");
-                    if ignore {
-                        return next.run(req).await;
-                    }
-                    let start = std::time::Instant::now();
-                    let out = next.run(req).await;
-                    let duration = start.elapsed();
-                    info!("{uri} took {duration:?}");
-                    out
-                },
-            )).layer(Extension(session_key()));
+            let router = dioxus::server::router(App)
+                .layer(axum::middleware::from_fn(
+                    |req: Request, next: Next| async {
+                        let uri = req.uri().clone();
+                        let ignore =
+                            uri.path().starts_with("/assets") || uri.path().starts_with("/wasm");
+                        if ignore {
+                            return next.run(req).await;
+                        }
+                        let start = std::time::Instant::now();
+                        let out = next.run(req).await;
+                        let duration = start.elapsed();
+                        info!("{uri} took {duration:?}");
+                        out
+                    },
+                ))
+                .layer(Extension(session_key()));
             Ok(router)
         });
     }

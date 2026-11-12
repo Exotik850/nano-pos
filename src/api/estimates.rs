@@ -1,19 +1,18 @@
+#[cfg(feature = "server")]
+use crate::api::auth::Session;
+use crate::models::{Estimate, EstimateDetails, EstimateDraft, EstimateProduct};
+#[cfg(feature = "server")]
+use crate::models::{EstimateForm, EstimateProductForm};
 use dioxus::prelude::*;
 
-#[cfg(feature = "server")]
-use crate::models::EstimateForm;
-#[cfg(feature = "server")]
-use crate::models::EstimateProductForm;
-use crate::models::{Estimate, EstimateDetails, EstimateDraft, EstimateProduct};
-
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn list_estimates() -> Result<Vec<Estimate>, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     Estimate::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load estimates: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn get_estimate(estimate_id: i32) -> Result<Option<EstimateDetails>, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     match Estimate::find(&mut conn, estimate_id) {
@@ -29,7 +28,7 @@ pub async fn get_estimate(estimate_id: i32) -> Result<Option<EstimateDetails>, S
     }
 }
 
-#[server(session: crate::auth::Session)]
+#[server(session: Session)]
 pub async fn create_estimate(
     EstimateDraft {
         mut estimate,
@@ -43,7 +42,7 @@ pub async fn create_estimate(
         .map_err(|error| ServerFnError::Response(format!("Could not create estimate: {error}")))
 }
 
-#[server(session: crate::auth::Session)]
+#[server(session: Session)]
 pub async fn update_estimate(
     estimate_id: i32,
     EstimateDraft {
@@ -58,7 +57,7 @@ pub async fn update_estimate(
         .map_err(|error| ServerFnError::Response(format!("Could not update estimate: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn delete_estimate(estimate_id: i32) -> Result<(), ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     Estimate::delete(&mut conn, estimate_id)
@@ -66,7 +65,7 @@ pub async fn delete_estimate(estimate_id: i32) -> Result<(), ServerFnError> {
         .map_err(|error| ServerFnError::Response(format!("Could not delete estimate: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn list_estimate_products(
     estimate_id: i32,
 ) -> Result<Vec<EstimateProduct>, ServerFnError> {

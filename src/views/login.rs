@@ -3,8 +3,8 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::Route;
-use crate::auth::{AuthContext, login};
-use crate::components::{AuthForm, AuthLink, FormInput};
+use crate::api::auth::login;
+use crate::components::{AuthContext, AuthForm, AuthLink, FormInput};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct LoginForm {

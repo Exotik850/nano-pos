@@ -1,6 +1,5 @@
 use crate::Route;
-use crate::auth::AuthContext;
-use crate::components::{Button, ButtonLink, ButtonVariant, SearchBar};
+use crate::components::{AuthContext, Button, ButtonLink, ButtonVariant, SearchBar};
 use crate::views::sidebar::Hidden;
 use dioxus::prelude::*;
 use dioxus_icons::lucide::ChevronsRight;

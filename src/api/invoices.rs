@@ -1,17 +1,19 @@
 use dioxus::{fullstack::Form, prelude::*};
 
+#[cfg(feature = "server")]
+use crate::api::auth::Session;
 use crate::models::{Invoice, InvoiceDetails, InvoiceDraft, InvoiceProduct};
 #[cfg(feature = "server")]
 use crate::models::{InvoiceForm, InvoiceProductForm};
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn list_invoices() -> Result<Vec<Invoice>, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     Invoice::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load invoices: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     match Invoice::find(&mut conn, invoice_id) {
@@ -27,7 +29,7 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
     }
 }
 
-#[server(session: crate::auth::Session)]
+#[server(session: Session)]
 pub async fn create_invoice(
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
@@ -39,7 +41,7 @@ pub async fn create_invoice(
     Ok(invoice)
 }
 
-#[server(session: crate::auth::Session)]
+#[server(session: Session)]
 pub async fn update_invoice(
     invoice_id: i32,
     InvoiceDraft { mut form, products }: InvoiceDraft,
@@ -51,7 +53,7 @@ pub async fn update_invoice(
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     Invoice::delete(&mut conn, invoice_id)
@@ -59,7 +61,7 @@ pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
         .map_err(|error| ServerFnError::Response(format!("Could not delete invoice: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn list_invoice_products(invoice_id: i32) -> Result<Vec<InvoiceProduct>, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     Invoice::products(&mut conn, invoice_id).map_err(|error| {
@@ -67,7 +69,7 @@ pub async fn list_invoice_products(invoice_id: i32) -> Result<Vec<InvoiceProduct
     })
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn create_invoice_product(
     form: Form<InvoiceProduct>,
 ) -> Result<InvoiceProduct, ServerFnError> {
@@ -77,7 +79,7 @@ pub async fn create_invoice_product(
         .map_err(|error| ServerFnError::Response(format!("Could not add invoice product: {error}")))
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn update_invoice_product(form: InvoiceProduct) -> Result<InvoiceProduct, ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::update(&mut conn, form.id, &form).map_err(|error| {
@@ -85,7 +87,7 @@ pub async fn update_invoice_product(form: InvoiceProduct) -> Result<InvoiceProdu
     })
 }
 
-#[server(_session: crate::auth::Session)]
+#[server(_session: Session)]
 pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::delete(&mut conn, id)

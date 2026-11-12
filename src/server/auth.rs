@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use super::db::establish_connection;
-use crate::auth::Session;
+use crate::api::auth::Session;
 use crate::models::{User, UserForm};
 use crate::server::schema::users;
 
