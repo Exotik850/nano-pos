@@ -1,4 +1,4 @@
-use crate::{api::search::SearchResult};
+use crate::api::search::SearchResult;
 use diesel::prelude::*;
 use dioxus::server::inventory;
 

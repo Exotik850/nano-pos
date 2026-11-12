@@ -19,8 +19,16 @@ pub fn Navbar() -> Element {
     let session = auth.session();
     let signed_in = session.is_some();
 
-    let invis_sign_in = if signed_in { "" } else { "invisible !w-0 !p-0 !opacity-0" };
-    let hidden = if sidebar_hidden.0() { "" } else { "invisible !w-0 !p-0 !opacity-0" };
+    let invis_sign_in = if signed_in {
+        ""
+    } else {
+        "invisible !w-0 !p-0 !opacity-0"
+    };
+    let hidden = if sidebar_hidden.0() {
+        ""
+    } else {
+        "invisible !w-0 !p-0 !opacity-0"
+    };
 
     rsx! {
         div {

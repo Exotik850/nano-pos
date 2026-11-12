@@ -1,10 +1,10 @@
 use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
+use crate::models::EstimateForm;
+#[cfg(feature = "server")]
 use crate::models::EstimateProductForm;
 use crate::models::{Estimate, EstimateDetails, EstimateDraft, EstimateProduct};
-#[cfg(feature = "server")]
-use crate::models::EstimateForm;
 
 #[cfg(feature = "server")]
 fn require_estimate_session(
@@ -41,7 +41,10 @@ pub async fn get_estimate(estimate_id: i32) -> Result<Option<EstimateDetails>, S
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn create_estimate(
-    EstimateDraft { mut estimate, products }: EstimateDraft,
+    EstimateDraft {
+        mut estimate,
+        products,
+    }: EstimateDraft,
 ) -> Result<Estimate, ServerFnError> {
     let session = require_estimate_session(&cookies)?;
     estimate.user_id = session.id;
@@ -77,7 +80,9 @@ pub async fn delete_estimate(estimate_id: i32) -> Result<(), ServerFnError> {
 }
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
-pub async fn list_estimate_products(estimate_id: i32) -> Result<Vec<EstimateProduct>, ServerFnError> {
+pub async fn list_estimate_products(
+    estimate_id: i32,
+) -> Result<Vec<EstimateProduct>, ServerFnError> {
     require_estimate_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Estimate::products(&mut conn, estimate_id).map_err(|error| {
@@ -86,7 +91,10 @@ pub async fn list_estimate_products(estimate_id: i32) -> Result<Vec<EstimateProd
 }
 
 #[cfg(feature = "server")]
-fn validate_estimate(form: &EstimateForm, products: &[EstimateProductForm]) -> Result<(), ServerFnError> {
+fn validate_estimate(
+    form: &EstimateForm,
+    products: &[EstimateProductForm],
+) -> Result<(), ServerFnError> {
     if form.doc_number.trim().is_empty() {
         return Err(ServerFnError::Response(
             "Document number is required.".into(),

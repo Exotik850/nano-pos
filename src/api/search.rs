@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
-use serde::{Deserialize, Serialize};
 use crate::Route;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct SearchResult {
@@ -16,7 +16,6 @@ fn require_search_session(headers: &dioxus::fullstack::HeaderMap) -> Result<(), 
         .map(|_| ())
         .ok_or_else(|| ServerFnError::Response("You must be signed in to perform searches.".into()))
 }
-
 
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn search_all(query: String) -> Result<Vec<SearchResult>, ServerFnError> {

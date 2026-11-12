@@ -12,7 +12,9 @@ struct Styles;
 
 #[component]
 pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element {
-    let base = attributes!(div { class: Styles::dx_select });
+    let base = attributes!(div {
+        class: Styles::dx_select
+    });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
@@ -28,8 +30,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
             roving_loop: props.roving_loop,
             typeahead_timeout: props.typeahead_timeout,
             attributes: merged,
-            select::SelectTrigger {
-                class: "{Styles::dx_select_trigger} w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-left text-zinc-900 outline-none transition focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
+            select::SelectTrigger { class: "{Styles::dx_select_trigger} w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-left text-zinc-900 outline-none transition focus:border-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100",
                 select::SelectValue {}
                 ChevronDown {
                     class: "dx-select-expand-icon",
@@ -37,10 +38,7 @@ pub fn Select<T: Clone + PartialEq + 'static>(props: SelectProps<T>) -> Element 
                     stroke: "var(--primary-color-7)",
                 }
             }
-            select::SelectList {
-                class: "{Styles::dx_select_list} max-h-60 overflow-y-auto p-1",
-                {props.children}
-            }
+            select::SelectList { class: "{Styles::dx_select_list} max-h-60 overflow-y-auto p-1", {props.children} }
         }
     }
 }
@@ -60,8 +58,7 @@ pub fn FormSelect<T: Clone + PartialEq + 'static>(
     #[props(default)] on_open_change: Callback<bool>,
     #[props(default)] roving_loop: ReadSignal<bool>,
     #[props(default)] typeahead_timeout: ReadSignal<std::time::Duration>,
-    #[props(extends = GlobalAttributes)]
-    attributes: Vec<Attribute>,
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
 ) -> Element {
     rsx! {
@@ -94,7 +91,9 @@ pub fn FormSelect<T: Clone + PartialEq + 'static>(
 
 #[component]
 pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -> Element {
-    let base = attributes!(div { class: Styles::dx_select });
+    let base = attributes!(div {
+        class: Styles::dx_select
+    });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
@@ -110,8 +109,7 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
             roving_loop: props.roving_loop,
             typeahead_timeout: props.typeahead_timeout,
             attributes: merged,
-            select::SelectTrigger {
-                class: Styles::dx_select_trigger,
+            select::SelectTrigger { class: Styles::dx_select_trigger,
                 select::SelectValue {}
                 ChevronDown {
                     class: "dx-select-expand-icon",
@@ -119,25 +117,20 @@ pub fn SelectMulti<T: Clone + PartialEq + 'static>(props: SelectMultiProps<T>) -
                     stroke: "var(--primary-color-7)",
                 }
             }
-            select::SelectList {
-                class: "{Styles::dx_select_list} max-h-60 overflow-y-auto p-1",
-                {props.children}
-            }
+            select::SelectList { class: "{Styles::dx_select_list} max-h-60 overflow-y-auto p-1", {props.children} }
         }
     }
 }
 
 #[component]
 pub fn SelectGroupLabel(props: SelectGroupLabelProps) -> Element {
-    let base = attributes!(div { class: Styles::dx_select_group_label });
+    let base = attributes!(div {
+        class: Styles::dx_select_group_label
+    });
     let merged = merge_attributes(vec![base, props.attributes]);
 
     rsx! {
-        select::SelectGroupLabel {
-            id: props.id,
-            attributes: merged,
-            {props.children}
-        }
+        select::SelectGroupLabel { id: props.id, attributes: merged, {props.children} }
     }
 }
 
@@ -161,10 +154,7 @@ pub fn SelectOption<T: Clone + PartialEq + 'static>(props: SelectOptionProps<T>)
             attributes: merged,
             {props.children}
             select::SelectItemIndicator {
-                Check {
-                    size: "1rem",
-                    stroke: "var(--secondary-color-5)",
-                }
+                Check { size: "1rem", stroke: "var(--secondary-color-5)" }
             }
         }
     }

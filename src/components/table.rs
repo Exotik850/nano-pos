@@ -83,10 +83,7 @@ pub fn TableInput(
 }
 
 #[component]
-pub fn TableSelect(
-    #[props(into)] value: Signal<String>,
-    children: Element,
-) -> Element {
+pub fn TableSelect(#[props(into)] value: Signal<String>, children: Element) -> Element {
     rsx! {
         select {
             class: "w-full rounded-md border border-transparent bg-transparent px-2.5 py-2 text-sm text-zinc-900 outline-none transition hover:border-zinc-300 hover:bg-zinc-50 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60 dark:focus:border-zinc-400 dark:focus:ring-zinc-700",

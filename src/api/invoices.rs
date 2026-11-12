@@ -1,6 +1,6 @@
 use dioxus::{fullstack::Form, prelude::*};
 
-use crate::models::{Invoice, InvoiceDetails, InvoiceProduct, InvoiceDraft};
+use crate::models::{Invoice, InvoiceDetails, InvoiceDraft, InvoiceProduct};
 #[cfg(feature = "server")]
 use crate::models::{InvoiceForm, InvoiceProductForm};
 
@@ -53,10 +53,7 @@ pub async fn create_invoice(
 #[server(cookies: dioxus::fullstack::HeaderMap)]
 pub async fn update_invoice(
     invoice_id: i32,
-    InvoiceDraft {
-        mut form,
-        products,
-    }: InvoiceDraft,
+    InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
@@ -116,7 +113,10 @@ pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
 }
 
 #[cfg(feature = "server")]
-fn validate_invoice(form: &InvoiceForm, products: &[InvoiceProductForm]) -> Result<(), ServerFnError> {
+fn validate_invoice(
+    form: &InvoiceForm,
+    products: &[InvoiceProductForm],
+) -> Result<(), ServerFnError> {
     use chrono::NaiveDateTime;
     if form.doc_number.trim().is_empty() {
         return Err(ServerFnError::Response(

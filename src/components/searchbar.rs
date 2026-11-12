@@ -8,12 +8,11 @@ use crate::api::search::search_all;
 
 #[component]
 pub fn SearchBar(
-  #[props(into, default)] class: String,
-  #[props(extends = GlobalAttributes)]
-  #[props(extends = div)] 
-  prop: Vec<Attribute>,
+    #[props(into, default)] class: String,
+    #[props(extends = GlobalAttributes)]
+    #[props(extends = div)]
+    prop: Vec<Attribute>,
 ) -> Element {
-
     let mut value = use_signal(String::new);
     let mut query = use_signal(String::new);
     let mut focused = use_signal(|| false);

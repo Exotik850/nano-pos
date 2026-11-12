@@ -14,15 +14,17 @@ fn EstimateTableRow(
     contacts: Vec<Contact>,
     ondelete: EventHandler<i32>,
 ) -> Element {
-    let customer_name = estimate.customer_id.map_or("No customer".to_string(), |customer_id| {
-        contacts
-            .iter()
-            .find(|contact| contact.id == customer_id)
-            .map_or_else(
-                || format!("Customer #{customer_id}"),
-                |contact| format!("{} {}", contact.first_name, contact.last_name),
-            )
-    });
+    let customer_name = estimate
+        .customer_id
+        .map_or("No customer".to_string(), |customer_id| {
+            contacts
+                .iter()
+                .find(|contact| contact.id == customer_id)
+                .map_or_else(
+                    || format!("Customer #{customer_id}"),
+                    |contact| format!("{} {}", contact.first_name, contact.last_name),
+                )
+        });
     let created = estimate.created_at.format("%Y-%m-%d").to_string();
     rsx! {
         TableRow {

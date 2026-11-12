@@ -276,7 +276,7 @@ pub fn login_impl(username: &str, password: &str) -> Result<Session, ServerFnErr
     };
 
     let user = user.ok_or_else(|| ServerFnError::Response("Invalid credentials".into()))?;
-    if !verify_password(&password, &user.password_hash) {
+    if !verify_password(password, &user.password_hash) {
         return Err(ServerFnError::Response("Invalid credentials".into()));
     }
 

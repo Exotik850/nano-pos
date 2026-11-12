@@ -33,7 +33,10 @@ pub struct EstimateForm {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(feature = "server", derive(Insertable, AsChangeset, Associations, HasQuery))]
+#[cfg_attr(
+    feature = "server",
+    derive(Insertable, AsChangeset, Associations, HasQuery)
+)]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::estimate_product))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 #[cfg_attr(feature = "server", diesel(belongs_to(Estimate)))]
@@ -219,8 +222,8 @@ mod estimate_product_server {
 mod estimate_search {
     use crate::{api::search::SearchResult, server::search::SearchFilter};
     use diesel::prelude::*;
-    use serde::{Deserialize, Serialize};
     use dioxus::server::inventory;
+    use serde::{Deserialize, Serialize};
 
     #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, HasQuery)]
     #[diesel(table_name = crate::server::schema::estimate)]
@@ -230,7 +233,6 @@ mod estimate_search {
         pub doc_number: String,
         pub description: Option<String>,
     }
-
 
     impl From<EstimateSearchResult> for SearchResult {
         fn from(value: EstimateSearchResult) -> Self {

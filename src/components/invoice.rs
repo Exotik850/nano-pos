@@ -4,7 +4,9 @@ use dioxus_primitives::select::{SelectGroup, SelectOption};
 
 use crate::components::select::{FormSelect, SelectGroupLabel};
 use crate::components::{input::FormInput, textarea::FormTextarea};
-use crate::models::{Contact, InvoiceDetails, InvoiceForm, InvoiceProductForm, Product, InvoiceDraft};
+use crate::models::{
+    Contact, InvoiceDetails, InvoiceDraft, InvoiceForm, InvoiceProductForm, Product,
+};
 
 use super::{
     Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
@@ -24,11 +26,8 @@ pub fn InvoiceFormView(
     submit_label: String,
     onsubmit: EventHandler<Result<InvoiceDraft, String>>,
 ) -> Element {
-    let mut customer_id: Signal<Option<i32>> = use_signal(|| {
-        initial
-            .as_ref()
-            .map(|value| value.invoice.customer_id)
-    });
+    let mut customer_id: Signal<Option<i32>> =
+        use_signal(|| initial.as_ref().map(|value| value.invoice.customer_id));
     let doc_number = use_signal(|| {
         initial
             .as_ref()
@@ -57,7 +56,12 @@ pub fn InvoiceFormView(
         initial
             .as_ref()
             .map(|value| value.products.clone())
-            .map(|prods| prods.into_iter().map(|l: crate::models::InvoiceProduct| l.into()).collect())
+            .map(|prods| {
+                prods
+                    .into_iter()
+                    .map(|l: crate::models::InvoiceProduct| l.into())
+                    .collect()
+            })
             .unwrap_or_default()
     });
     let mut selected_product = use_signal(String::new);
@@ -92,12 +96,11 @@ pub fn InvoiceFormView(
                         return;
                     }
                 };
-                let customer = match customer_id() {
-                    Some(value) => value,
-                    _ => {
-                        onsubmit.call(Err("Select a customer.".to_string()));
-                        return;
-                    }
+                let customer = if let Some(value) = customer_id() {
+                    value
+                } else {
+                    onsubmit.call(Err("Select a customer.".to_string()));
+                    return;
                 };
                 onsubmit
                     .call(
@@ -128,8 +131,7 @@ pub fn InvoiceFormView(
                     on_value_change: move |value| {
                         customer_id.set(value);
                     },
-                    SelectGroup {
-                        class: "w-full",
+                    SelectGroup { class: "w-full",
                         SelectGroupLabel { "Select a customer" }
                         for (index, contact) in contacts.into_iter().enumerate() {
                             SelectOption::<i32> {

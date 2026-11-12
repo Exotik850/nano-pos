@@ -4,7 +4,9 @@ use dioxus_primitives::select::SelectGroup;
 use crate::Route;
 use crate::components::select::{FormSelect, SelectGroupLabel, SelectOption};
 use crate::components::{input::FormInput, textarea::FormTextarea};
-use crate::models::{Contact, EstimateDetails, EstimateDraft, EstimateForm, EstimateProductForm, Product};
+use crate::models::{
+    Contact, EstimateDetails, EstimateDraft, EstimateForm, EstimateProductForm, Product,
+};
 
 use super::{
     Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
@@ -83,23 +85,22 @@ pub fn EstimateFormView(
                 }
                 div { class: "flex w-full flex-col gap-1",
                     FormSelect::<i32> {
-                      label: "Customer",
-                      name: "customer_id",
-                      on_value_change: move |value| {
-                          customer_id.set(value);
-                      },
-                      SelectGroup {
-                          class: "w-full",
-                          SelectGroupLabel { "Select a customer" }
-                          for (index, contact) in contacts.into_iter().enumerate() {
-                              SelectOption::<i32> {
-                                  index,
-                                  value: contact.id,
-                                  text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
-                                  "{contact.first_name} {contact.last_name} ({contact.email})"
-                              }
-                          }
-                      }
+                        label: "Customer",
+                        name: "customer_id",
+                        on_value_change: move |value| {
+                            customer_id.set(value);
+                        },
+                        SelectGroup { class: "w-full",
+                            SelectGroupLabel { "Select a customer" }
+                            for (index, contact) in contacts.into_iter().enumerate() {
+                                SelectOption::<i32> {
+                                    index,
+                                    value: contact.id,
+                                    text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
+                                    "{contact.first_name} {contact.last_name} ({contact.email})"
+                                }
+                            }
+                        }
                     }
                 }
             }
