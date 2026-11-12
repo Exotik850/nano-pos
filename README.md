@@ -1,15 +1,21 @@
-### Serving Your App
+# nano-pos
 
-Run the following commands in the root of your project to start developing with the default platform:
+nano-pos is a small point-of-sale website built with Rust, Dioxus, and Diesel.
+
+## Goals
+
+- Provide a minimal POS system for small businesses.
+- Keep the codebase easy to extend with user-created types and custom fields.
+- Add a plugin system in the future for more flexible extensions.
+
+The current model includes users, contacts, products, estimates, and invoices.
+
+## Development
 
 ```bash
 diesel setup
-diesel migration run 
+diesel migration run
 dx serve --platform web
 ```
 
-To run for a different platform, use the `--platform platform` flag. E.g.
-```bash
-dx serve --platform desktop
-```
-
+The project is licensed under the [GPLv3 License](LICENSE).
