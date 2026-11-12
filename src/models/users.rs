@@ -3,7 +3,7 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
 #[derive(Debug)]
-#[cfg_attr(feature = "server", derive(Queryable, Selectable))]
+#[cfg_attr(feature = "server", derive(HasQuery))]
 #[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::users))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
 pub struct User {

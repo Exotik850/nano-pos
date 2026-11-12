@@ -139,6 +139,10 @@ fn main() {
             server::axum::{self, middleware::Next},
         };
         dioxus::serve(|| async {
+            use dioxus::server::axum::Extension;
+            use crate::server::auth::session_key;
+
+
             let router = dioxus::server::router(App).layer(axum::middleware::from_fn(
                 |req: Request, next: Next| async {
                     let uri = req.uri().clone();
@@ -153,7 +157,7 @@ fn main() {
                     info!("{uri} took {duration:?}");
                     out
                 },
-            ));
+            )).layer(Extension(session_key()));
             Ok(router)
         });
     }

@@ -4,25 +4,15 @@ use crate::models::{Invoice, InvoiceDetails, InvoiceDraft, InvoiceProduct};
 #[cfg(feature = "server")]
 use crate::models::{InvoiceForm, InvoiceProductForm};
 
-#[cfg(feature = "server")]
-fn require_invoice_session(
-    headers: &dioxus::fullstack::HeaderMap,
-) -> Result<crate::auth::Session, ServerFnError> {
-    crate::server::auth::current_user_impl(headers)?
-        .ok_or_else(|| ServerFnError::Response("You must be signed in to manage invoices.".into()))
-}
-
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn list_invoices() -> Result<Vec<Invoice>, ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Invoice::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load invoices: {error}")))
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     match Invoice::find(&mut conn, invoice_id) {
         Ok(invoice) => Invoice::products(&mut conn, invoice_id)
@@ -37,11 +27,10 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
     }
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(session: crate::auth::Session)]
 pub async fn create_invoice(
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
-    let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
     let mut conn = crate::server::db::establish_connection();
@@ -50,12 +39,11 @@ pub async fn create_invoice(
     Ok(invoice)
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(session: crate::auth::Session)]
 pub async fn update_invoice(
     invoice_id: i32,
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
-    let session = require_invoice_session(&cookies)?;
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
     let mut conn = crate::server::db::establish_connection();
@@ -63,47 +51,42 @@ pub async fn update_invoice(
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Invoice::delete(&mut conn, invoice_id)
         .map(|_| ())
         .map_err(|error| ServerFnError::Response(format!("Could not delete invoice: {error}")))
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn list_invoice_products(invoice_id: i32) -> Result<Vec<InvoiceProduct>, ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     Invoice::products(&mut conn, invoice_id).map_err(|error| {
         ServerFnError::Response(format!("Could not load invoice products: {error}"))
     })
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn create_invoice_product(
     form: Form<InvoiceProduct>,
 ) -> Result<InvoiceProduct, ServerFnError> {
-    require_invoice_session(&cookies)?;
     let product = form.0;
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::create(&mut conn, &product)
         .map_err(|error| ServerFnError::Response(format!("Could not add invoice product: {error}")))
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn update_invoice_product(form: InvoiceProduct) -> Result<InvoiceProduct, ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::update(&mut conn, form.id, &form).map_err(|error| {
         ServerFnError::Response(format!("Could not update invoice product: {error}"))
     })
 }
 
-#[server(cookies: dioxus::fullstack::HeaderMap)]
+#[server(_session: crate::auth::Session)]
 pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
-    require_invoice_session(&cookies)?;
     let mut conn = crate::server::db::establish_connection();
     InvoiceProduct::delete(&mut conn, id)
         .map(|_| ())

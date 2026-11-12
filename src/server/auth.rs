@@ -4,10 +4,13 @@ use std::sync::{Arc, LazyLock};
 
 use argon2::Argon2;
 use argon2::password_hash::{PasswordHasher, PasswordVerifier};
+use axum_extra::extract::SignedCookieJar;
 use chrono::{TimeDelta, Utc};
-use cookie::{Cookie, CookieJar, Key};
+use cookie::{Cookie, Expiration, Key};
+use dioxus::fullstack::extract::{FromRef, FromRequestParts};
 use dioxus::fullstack::http::HeaderValue;
-use dioxus::fullstack::http::header::{COOKIE, SET_COOKIE};
+use dioxus::fullstack::http::header::SET_COOKIE;
+use dioxus::fullstack::response::IntoResponse;
 use dioxus::fullstack::{FullstackContext, HeaderMap};
 use dioxus::logger::tracing::warn;
 use dioxus::prelude::*;
@@ -31,6 +34,35 @@ struct SessionPayload {
     uid: i32,
     /// Session expiry as a unix timestamp (seconds).
     exp: i64,
+}
+
+impl SessionPayload {
+    /// Check if the session has expired.
+    fn is_expired(&self) -> bool {
+        Utc::now().timestamp() > self.exp
+    }
+
+    fn for_user(user_id: i32) -> Self {
+        let expires = Utc::now() + TimeDelta::days(SESSION_TTL_DAYS);
+        Self {
+            uid: user_id,
+            exp: expires.timestamp(),
+        }
+    }
+
+    fn cookie(&self) -> Result<Cookie<'static>, ServerFnError> {
+        serde_json::to_string(self)
+            .map(|value| {
+                Cookie::build((SESSION_COOKIE, value))
+                    .http_only(true)
+                    .secure(true)
+                    .same_site(cookie::SameSite::Strict)
+                    .path("/")
+                    .expires(Expiration::Session)
+                    .into()
+            })
+            .map_err(|error| ServerFnError::Response(format!("Could not create session: {error}")))
+    }
 }
 
 /// The session-signing secret, derived once for the process lifetime.
@@ -118,77 +150,96 @@ fn test_hash_and_verify() {
     assert!(!verify_password("wrong password", &hash));
 }
 
-fn session_key() -> Key {
+#[derive(Clone, Debug, PartialEq)]
+pub struct SessionKey(Key);
+
+impl FromRef<FullstackContext> for SessionKey {
+    fn from_ref(input: &FullstackContext) -> Self {
+        input.extension::<SessionKey>().unwrap()
+    }
+}
+
+pub struct SessionCookieJar {
+    jar: SignedCookieJar,
+}
+
+impl SessionCookieJar {
+    fn user_id(&self) -> Option<i32> {
+        let cookie = self.jar.get(SESSION_COOKIE)?;
+        let payload = serde_json::from_str::<SessionPayload>(cookie.value()).ok()?;
+        (!payload.is_expired()).then_some(payload.uid)
+    }
+
+    pub fn session(&self) -> Result<Session, ServerFnError> {
+        let uid = self.user_id().ok_or_else(|| {
+            ServerFnError::Response("You must be signed in to access this resource.".into())
+        })?;
+        load_session(uid)
+    }
+
+    pub fn set_session(mut self, user_id: i32) -> Result<Self, ServerFnError> {
+        let cookie = SessionPayload::for_user(user_id).cookie()?;
+        self.jar = self.jar.add(cookie);
+        self.commit_response()?;
+        Ok(self)
+    }
+
+    fn commit_response(&self) -> Result<(), ServerFnError> {
+        let response = self.jar.clone().into_response();
+        for value in response.headers().get_all(SET_COOKIE).iter() {
+            FullstackContext::current()
+                .ok_or_else(|| ServerFnError::Response("No active request context.".into()))?
+                .add_response_header(SET_COOKIE, value.clone());
+        }
+        Ok(())
+    }
+}
+
+impl<S> FromRequestParts<S> for SessionCookieJar
+where
+    S: Send + Sync,
+    SessionKey: FromRef<S>,
+{
+    type Rejection = <HeaderMap as FromRequestParts<S>>::Rejection;
+    async fn from_request_parts(
+        parts: &mut dioxus_server::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let map = HeaderMap::from_request_parts(parts, state).await?;
+        let key = SessionKey::from_ref(state);
+        let jar = SignedCookieJar::from_headers(&map, key.0);
+        Ok(Self { jar })
+    }
+}
+
+impl<S> FromRequestParts<S> for Session
+where
+    S: Send + Sync,
+    SessionCookieJar: FromRequestParts<S>,
+{
+    type Rejection = dioxus::fullstack::http::StatusCode;
+
+    async fn from_request_parts(
+        parts: &mut dioxus_server::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let jar = SessionCookieJar::from_request_parts(parts, state)
+            .await
+            .map_err(|_| dioxus::fullstack::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+        jar.session()
+            .map_err(|_| dioxus::fullstack::http::StatusCode::UNAUTHORIZED)
+    }
+}
+
+pub(crate) fn session_key() -> SessionKey {
     let mut key = [0u8; 64];
     key[..SESSION_SECRET.len()].copy_from_slice(SESSION_SECRET.as_slice());
-    Key::from(&key)
-}
-
-/// Build a signed session cookie value for `user_id`, valid for
-/// `SESSION_TTL_DAYS`.
-fn create_session_cookie(user_id: i32) -> String {
-    let expires = Utc::now() + TimeDelta::days(SESSION_TTL_DAYS);
-    let payload = SessionPayload {
-        uid: user_id,
-        exp: expires.timestamp(),
-    };
-    let mut jar = CookieJar::new();
-    jar.signed_mut(&session_key()).add(Cookie::new(
-        SESSION_COOKIE,
-        serde_json::to_string(&payload).expect("SessionPayload is serializable"),
-    ));
-    jar.get(SESSION_COOKIE).unwrap().value().to_string()
-}
-
-#[cfg(test)]
-#[test]
-fn test_session_cookie_round_trip() {
-    let cookie = create_session_cookie(42);
-    assert_eq!(parse_session_cookie(&cookie), Some(42));
-}
-
-/// Validate a session cookie value, returning the user id when the signature
-/// checks out and the session has not expired.
-fn parse_session_cookie(value: impl std::fmt::Display) -> Option<i32> {
-    let value = value.to_string();
-    let mut jar = CookieJar::new();
-    jar.add((SESSION_COOKIE, value));
-    let payload: SessionPayload =
-        serde_json::from_str(jar.signed(&session_key()).get(SESSION_COOKIE)?.value()).ok()?;
-    if Utc::now().timestamp() > payload.exp {
-        return None;
-    }
-    Some(payload.uid)
-}
-
-/// Read the session cookie value out of the incoming request headers.
-fn read_session_cookie(headers: &HeaderMap) -> Option<String> {
-    let raw = headers.get(COOKIE)?.to_str().ok()?;
-    raw.split(';').find_map(|pair| {
-        let (name, val) = pair.trim().split_once('=')?;
-        (name == SESSION_COOKIE).then(|| val.to_string())
-    })
+    SessionKey(Key::from(&key))
 }
 
 /// Attach a `Set-Cookie` header (through the active request context) that
 /// establishes a session for `user_id`. The browser (same-origin fetch on web,
 /// reqwest cookie jar on desktop) stores the HttpOnly cookie.
-fn set_session_cookie(user_id: i32) {
-    let value = create_session_cookie(user_id);
-    let expires = Utc::now() + TimeDelta::days(SESSION_TTL_DAYS);
-    let cookie = Cookie::build((SESSION_COOKIE, value))
-        .path("/")
-        .http_only(true)
-        .secure(true)
-        .same_site(cookie::SameSite::Strict)
-        .expires(cookie::time::OffsetDateTime::from_unix_timestamp(expires.timestamp()).unwrap());
-    if let Some(ctx) = FullstackContext::current()
-        && let Ok(value) = HeaderValue::from_str(&cookie.to_string())
-    {
-        ctx.add_response_header(SET_COOKIE, value);
-    }
-}
-
 /// Attach a `Set-Cookie` header that expires (clears) the session cookie.
 fn clear_session_cookie() {
     let cookie = cookie::Cookie::build(SESSION_COOKIE)
@@ -216,7 +267,12 @@ fn session_from_user(user: &User) -> Session {
 }
 
 /// Register a new user, set the session cookie, and return the new session.
-pub fn signup_impl(username: &str, email: &str, password: &str) -> Result<Session, ServerFnError> {
+pub fn signup_impl(
+    username: &str,
+    email: &str,
+    password: &str,
+    jar: SessionCookieJar,
+) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
     let username = username.trim();
@@ -256,12 +312,16 @@ pub fn signup_impl(username: &str, email: &str, password: &str) -> Result<Sessio
     };
 
     let session = session_from_user(&user);
-    set_session_cookie(session.id);
+    let _ = jar.set_session(session.id)?;
     Ok(session)
 }
 
 /// Log a user in by username and password, setting the session cookie.
-pub fn login_impl(username: &str, password: &str) -> Result<Session, ServerFnError> {
+pub fn login_impl(
+    username: &str,
+    password: &str,
+    jar: SessionCookieJar,
+) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
     let username = username.trim().to_string();
@@ -281,31 +341,23 @@ pub fn login_impl(username: &str, password: &str) -> Result<Session, ServerFnErr
     }
 
     let session = session_from_user(&user);
-    set_session_cookie(session.id);
+    let _ = jar.set_session(session.id)?;
     Ok(session)
 }
 
-/// Load the user referenced by the session cookie, if the cookie is valid.
-pub fn current_user_impl(headers: &HeaderMap) -> Result<Option<Session>, ServerFnError> {
+fn load_session(uid: i32) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
-    let Some(raw) = read_session_cookie(headers) else {
-        return Ok(None);
-    };
-    let Some(uid) = parse_session_cookie(&raw) else {
-        return Ok(None);
-    };
-
-    let user = {
-        let mut conn = establish_connection();
-        users::table
-            .filter(users::id.eq(uid))
-            .first::<User>(&mut *conn)
-            .optional()
-            .map_err(|e| ServerFnError::Response(format!("Database error: {e}")))?
-    };
-
-    Ok(user.map(|u| session_from_user(&u)))
+    let mut conn = establish_connection();
+    let user = User::query()
+        .filter(users::id.eq(uid))
+        .first(&mut *conn)
+        .optional()
+        .map_err(|e| ServerFnError::Response(format!("Database error: {e}")))?
+        .ok_or_else(|| {
+            ServerFnError::Response("You must be signed in to access this resource.".into())
+        })?;
+    Ok(session_from_user(&user))
 }
 
 /// Clear the caller's session cookie.
