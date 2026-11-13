@@ -45,7 +45,7 @@ pub fn Navbar() -> Element {
 
             Link {
                 class: "font-semibold text-zinc-900 hover:underline dark:text-zinc-100 {hidden}",
-                to: Route::Home {},
+                to: Route::Home,
                 "Home"
             }
 
@@ -64,7 +64,7 @@ pub fn Navbar() -> Element {
                         r#type: "button",
                         onclick: move |_| async move {
                             auth.clear_session().await;
-                            navigator.replace(Route::Home {});
+                            navigator.replace(Route::Home);
                         },
                         "Log out"
                     }

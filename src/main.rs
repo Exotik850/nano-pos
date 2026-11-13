@@ -76,7 +76,7 @@ fn PageTransitions() -> Element {
 /// 
 /// Each variant represents a different URL pattern that can be matched by the router. If that pattern is matched,
 /// the components for that route will be rendered.
-#[derive(Debug, Clone, Routable, PartialEq, Serialize, Deserialize, Eq)]
+#[derive(Debug, Clone, Routable, PartialEq, Serialize, Deserialize, Eq, Default)]
 #[rustfmt::skip]
 enum Route {
     #[layout(AuthProvider)]
@@ -86,7 +86,8 @@ enum Route {
     #[layout(LoadingFallback)]
     #[layout(PageTransitions)]
         #[route("/")]
-        Home {},
+        #[default]
+        Home,
         #[route("/login")]
         Login {},
         #[route("/signup")]

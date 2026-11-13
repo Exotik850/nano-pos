@@ -52,7 +52,7 @@ pub fn Sidebar() -> Element {
                 nav {
                     class: "flex flex-col gap-1",
                     "aria-label": "Main navigation",
-                    SidebarLink { to: Route::Home {}, "Home" }
+                    SidebarLink { to: Route::Home, "Home" }
                     SidebarLink { to: Route::IndexProducts {}, "Products" }
                     SidebarLink { to: Route::IndexContacts {}, "Contacts" }
                     SidebarLink { to: Route::IndexInvoices {}, "Invoices" }

@@ -42,7 +42,7 @@ pub fn Signup() -> Element {
                 match signup(Form(form)).await {
                     Ok(session) => {
                         auth.set_session(session);
-                        navigator.replace(Route::Home {});
+                        navigator.replace(Route::Home);
                     }
                     Err(e) => error.set(Some(e.to_string())),
                 }
