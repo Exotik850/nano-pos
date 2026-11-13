@@ -10,7 +10,6 @@ edition = "2024"
 dioxus = { version = "0.7", features = ["fullstack", "router", "html"] }
 dioxus-html = { version = "0.7", features = ["serialize"] }
 chrono = { version = "0.4", default-features = false, features = ["serde", "alloc"] }
-dotenvy = "0.15"
 serde = { version = "1", features = ["derive"] }
 dioxus-icons = { version = "0.1" }
 dioxus-primitives = { git = "https://github.com/DioxusLabs/components", version = "0.0.1", default-features = false }
@@ -26,7 +25,9 @@ argon2 = { version = "0.6", optional = true }
 serde_json = { version = "1", optional = true, default-features = false }
 sha2 = { version = "0.11", optional = true, default-features = false }
 axum-extra = { version = "0.12", features = ["cookie-signed"], optional = true }
-diesel_migrations = { version = "2.3.2", features = ["postgres"] }
+diesel_migrations = { version = "2.3.2", features = ["postgres"], optional = true }
+dotenvy = { version = "0.15", optional = true }
+
 
 [features]
 default = ["web"]
@@ -44,5 +45,7 @@ server = [
   "dep:argon2",
   "dep:sha2",
   "dep:serde_json",
-  "dep:axum-extra"
+  "dep:axum-extra",
+  "dep:dotenvy",
+  "dep:diesel_migrations"
 ]

@@ -139,8 +139,10 @@ fn main() {
         };
         dioxus::serve(|| async {
             use crate::server::auth::session_key;
+            use crate::server::db::DbHandle;
             use dioxus::server::axum::Extension;
 
+            let db = DbHandle::new().expect("Could not initialize the database");
             let router = dioxus::server::router(App)
                 .layer(axum::middleware::from_fn(
                     |req: Request, next: Next| async {
@@ -157,6 +159,7 @@ fn main() {
                         out
                     },
                 ))
+                .layer(Extension(db))
                 .layer(Extension(session_key()));
             Ok(router)
         });

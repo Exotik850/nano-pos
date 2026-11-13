@@ -17,7 +17,7 @@ use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use super::db::establish_connection;
+use super::db::DbHandle;
 use crate::api::auth::Session;
 use crate::models::{User, UserForm};
 use crate::server::schema::users;
@@ -170,11 +170,11 @@ impl SessionCookieJar {
         (!payload.is_expired()).then_some(payload.uid)
     }
 
-    pub fn session(&self) -> Result<Session, ServerFnError> {
+    pub fn session(&self, db: &DbHandle) -> Result<Session, ServerFnError> {
         let uid = self.user_id().ok_or_else(|| {
             ServerFnError::Response("You must be signed in to access this resource.".into())
         })?;
-        load_session(uid)
+        load_session(uid, db)
     }
 
     pub fn set_session(mut self, user_id: i32) -> Result<Self, ServerFnError> {
@@ -216,6 +216,7 @@ impl<S> FromRequestParts<S> for Session
 where
     S: Send + Sync,
     SessionCookieJar: FromRequestParts<S>,
+    DbHandle: FromRequestParts<S>,
 {
     type Rejection = dioxus::fullstack::http::StatusCode;
 
@@ -226,7 +227,10 @@ where
         let jar = SessionCookieJar::from_request_parts(parts, state)
             .await
             .map_err(|_| dioxus::fullstack::http::StatusCode::INTERNAL_SERVER_ERROR)?;
-        jar.session()
+        let db = DbHandle::from_request_parts(parts, state)
+            .await
+            .map_err(|_| dioxus::fullstack::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+        jar.session(&db)
             .map_err(|_| dioxus::fullstack::http::StatusCode::UNAUTHORIZED)
     }
 }
@@ -271,6 +275,7 @@ pub fn signup_impl(
     username: &str,
     email: &str,
     password: &str,
+    db: DbHandle,
     jar: SessionCookieJar,
 ) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
@@ -296,7 +301,7 @@ pub fn signup_impl(
     let password_hash = hash_password(password)?;
 
     let user = {
-        let mut conn = establish_connection();
+        let mut conn = db.get().map_err(ServerFnError::Response)?;
         diesel::insert_into(users::table)
             .values(&UserForm {
                 username,
@@ -320,6 +325,7 @@ pub fn signup_impl(
 pub fn login_impl(
     username: &str,
     password: &str,
+    db: DbHandle,
     jar: SessionCookieJar,
 ) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
@@ -327,7 +333,7 @@ pub fn login_impl(
     let username = username.trim().to_string();
     let password = password.trim();
     let user = {
-        let mut conn = establish_connection();
+        let mut conn = db.get().map_err(ServerFnError::Response)?;
         users::table
             .filter(users::username.eq(&username))
             .first::<User>(&mut *conn)
@@ -345,10 +351,10 @@ pub fn login_impl(
     Ok(session)
 }
 
-fn load_session(uid: i32) -> Result<Session, ServerFnError> {
+fn load_session(uid: i32, db: &DbHandle) -> Result<Session, ServerFnError> {
     use diesel::prelude::*;
 
-    let mut conn = establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     let user = User::query()
         .filter(users::id.eq(uid))
         .first(&mut *conn)

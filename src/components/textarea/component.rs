@@ -7,6 +7,7 @@ struct Styles;
 
 #[derive(Copy, Clone, PartialEq, Default)]
 #[non_exhaustive]
+#[allow(dead_code)]
 pub enum TextareaVariant {
     #[default]
     Default,

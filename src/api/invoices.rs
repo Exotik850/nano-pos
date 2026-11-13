@@ -1,21 +1,23 @@
-use dioxus::{fullstack::Form, prelude::*};
+use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
 use crate::api::auth::Session;
-use crate::models::{Invoice, InvoiceDetails, InvoiceDraft, InvoiceProduct};
+use crate::models::{Invoice, InvoiceDetails, InvoiceDraft};
 #[cfg(feature = "server")]
 use crate::models::{InvoiceForm, InvoiceProductForm};
+#[cfg(feature = "server")]
+use crate::server::db::DbHandle;
 
-#[server(_session: Session)]
+#[server(db: DbHandle, _session: Session)]
 pub async fn list_invoices() -> Result<Vec<Invoice>, ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     Invoice::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load invoices: {error}")))
 }
 
-#[server(_session: Session)]
+#[server(db: DbHandle, _session: Session)]
 pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     match Invoice::find(&mut conn, invoice_id) {
         Ok(invoice) => Invoice::products(&mut conn, invoice_id)
             .map(|products| Some(InvoiceDetails { invoice, products }))
@@ -29,72 +31,36 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
     }
 }
 
-#[server(session: Session)]
+#[server(db: DbHandle, session: Session)]
 pub async fn create_invoice(
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
-    let mut conn = crate::server::db::establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     let invoice = Invoice::create(&mut conn, &form, products)
         .map_err(|error| ServerFnError::Response(format!("Could not create invoice: {error}")))?;
     Ok(invoice)
 }
 
-#[server(session: Session)]
+#[server(db: DbHandle, session: Session)]
 pub async fn update_invoice(
     invoice_id: i32,
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
     form.user_id = session.id;
     validate_invoice(&form, &products)?;
-    let mut conn = crate::server::db::establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     Invoice::update(&mut conn, invoice_id, &form, products)
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
 }
 
-#[server(_session: Session)]
+#[server(db: DbHandle, _session: Session)]
 pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
+    let mut conn = db.get().map_err(ServerFnError::Response)?;
     Invoice::delete(&mut conn, invoice_id)
         .map(|_| ())
         .map_err(|error| ServerFnError::Response(format!("Could not delete invoice: {error}")))
-}
-
-#[server(_session: Session)]
-pub async fn list_invoice_products(invoice_id: i32) -> Result<Vec<InvoiceProduct>, ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
-    Invoice::products(&mut conn, invoice_id).map_err(|error| {
-        ServerFnError::Response(format!("Could not load invoice products: {error}"))
-    })
-}
-
-#[server(_session: Session)]
-pub async fn create_invoice_product(
-    form: Form<InvoiceProduct>,
-) -> Result<InvoiceProduct, ServerFnError> {
-    let product = form.0;
-    let mut conn = crate::server::db::establish_connection();
-    InvoiceProduct::create(&mut conn, &product)
-        .map_err(|error| ServerFnError::Response(format!("Could not add invoice product: {error}")))
-}
-
-#[server(_session: Session)]
-pub async fn update_invoice_product(form: InvoiceProduct) -> Result<InvoiceProduct, ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
-    InvoiceProduct::update(&mut conn, form.id, &form).map_err(|error| {
-        ServerFnError::Response(format!("Could not update invoice product: {error}"))
-    })
-}
-
-#[server(_session: Session)]
-pub async fn delete_invoice_product(id: i32) -> Result<(), ServerFnError> {
-    let mut conn = crate::server::db::establish_connection();
-    InvoiceProduct::delete(&mut conn, id)
-        .map(|_| ())
-        .map_err(|error| {
-            ServerFnError::Response(format!("Could not delete invoice product: {error}"))
-        })
 }
 
 #[cfg(feature = "server")]
