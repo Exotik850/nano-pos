@@ -30,6 +30,18 @@ pub struct ProductForm {
     pub quantity: i32,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "server", derive(HasQuery))]
+#[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::product))]
+#[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
+pub struct ProductSearchResult {
+    pub id: i32,
+    pub name: String,
+    pub sku: String,
+    pub price: i32,
+    pub quantity: i32,
+}
+
 #[cfg(feature = "server")]
 mod product_server {
     use super::{Product, ProductForm};
@@ -68,5 +80,39 @@ mod product_server {
         ) -> diesel::QueryResult<usize> {
             diesel::delete(product.find(product_id)).execute(conn)
         }
+    }
+}
+
+#[cfg(feature = "server")]
+mod product_search {
+    use super::ProductSearchResult;
+    use crate::{
+        api::search::SearchResult,
+        server::{schema::product::dsl::*, search::SearchFilter},
+    };
+    use diesel::prelude::*;
+    use dioxus::server::inventory;
+
+    impl From<ProductSearchResult> for SearchResult {
+        fn from(value: ProductSearchResult) -> Self {
+            SearchResult {
+                route: crate::Route::EditProduct { id: value.id },
+                title: value.name,
+                description: value.sku,
+            }
+        }
+    }
+
+    inventory::submit! {
+      SearchFilter::new(
+        |query: &str, conn: &mut PgConnection| {
+          let query = format!("%{}%", query);
+          product
+              .filter(name.ilike(&query).or(sku.ilike(&query)))
+              .select((id, name, sku, price, quantity))
+              .load::<ProductSearchResult>(conn)
+              .map(|results| results.into_iter().map(SearchResult::from).collect())
+        }
+      )
     }
 }
