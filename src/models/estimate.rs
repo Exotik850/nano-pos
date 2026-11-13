@@ -236,11 +236,11 @@ mod estimate_search {
 
     impl From<EstimateSearchResult> for SearchResult {
         fn from(value: EstimateSearchResult) -> Self {
-            SearchResult {
-                route: crate::Route::EditEstimate { id: value.id },
-                title: format!("Estimate #{}", value.doc_number),
-                description: value.description.unwrap_or_default(),
-            }
+            SearchResult::new()
+                .with_route(crate::Route::EditEstimate { id: value.id })
+                .with_title(format!("Estimate #{}", value.doc_number))
+                .with_description(value.description.unwrap_or_default())
+                .with_category("Estimates")
         }
     }
 

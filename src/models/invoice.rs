@@ -84,6 +84,7 @@ impl From<InvoiceProduct> for InvoiceProductForm {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg(feature = "server")]
 #[cfg_attr(feature = "server", derive(Queryable, Selectable))]
 #[cfg_attr(feature="server", diesel(table_name = crate::server::schema::invoice))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
@@ -246,11 +247,11 @@ mod invoice_search {
 
     impl From<InvoiceSearchResult> for SearchResult {
         fn from(value: InvoiceSearchResult) -> Self {
-            SearchResult {
-                route: crate::Route::EditInvoice { id: value.id },
-                title: format!("Invoice #{}", value.doc_number),
-                description: value.description.unwrap_or_default(),
-            }
+            SearchResult::new()
+                .with_route(crate::Route::EditInvoice { id: value.id })
+                .with_title(format!("Invoice #{}", value.doc_number))
+                .with_description(value.description.unwrap_or_default())
+                .with_category("Invoices")
         }
     }
 

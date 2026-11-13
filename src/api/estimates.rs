@@ -1,6 +1,6 @@
 #[cfg(feature = "server")]
 use crate::api::auth::Session;
-use crate::models::{Estimate, EstimateDetails, EstimateDraft, EstimateProduct};
+use crate::models::{Estimate, EstimateDetails, EstimateDraft};
 #[cfg(feature = "server")]
 use crate::models::{EstimateForm, EstimateProductForm};
 #[cfg(feature = "server")]

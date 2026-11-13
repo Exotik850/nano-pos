@@ -41,6 +41,7 @@ pub struct ContactForm {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg(feature = "server")]
 #[cfg_attr(feature = "server", derive(Queryable, Selectable))]
 #[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::contact))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
@@ -113,11 +114,11 @@ mod contact_search {
 
     impl From<ContactSearchResult> for SearchResult {
         fn from(contact: ContactSearchResult) -> Self {
-            SearchResult {
-                route: crate::Route::EditContact { id: contact.id },
-                title: format!("{} {}", contact.first_name, contact.last_name),
-                description: format!("Email: {}, Phone: {}", contact.email, contact.phone_number),
-            }
+            SearchResult::new()
+                .with_route(crate::Route::EditContact { id: contact.id })
+                .with_title(format!("{} {}", contact.first_name, contact.last_name))
+                .with_description(format!("Email: {}, Phone: {}", contact.email, contact.phone_number))
+                .with_category("Contacts")
         }
     }
 

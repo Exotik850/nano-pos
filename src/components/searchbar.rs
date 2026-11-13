@@ -4,7 +4,7 @@ use dioxus_primitives::popover::{PopoverContent, PopoverRoot};
 use dioxus_sdk_time::use_debounce;
 use std::time::Duration;
 
-use crate::api::search::search_all;
+use crate::api::search::{SearchResults, search_all};
 
 #[component]
 pub fn SearchBar(
@@ -23,7 +23,7 @@ pub fn SearchBar(
         let query = query().trim().to_owned();
         async move {
             if query.is_empty() {
-                return Ok(Vec::new());
+                return Ok(SearchResults::default());
             }
 
             search_all(query).await
@@ -63,19 +63,48 @@ pub fn SearchBar(
                         class: "absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-zinc-200 bg-white p-1.5 text-zinc-900 shadow-xl dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
                         align: dioxus_primitives::ContentAlign::Start,
                         match results() {
-                            Some(Ok(items)) if !items.is_empty() => rsx! {
-                                div { class: "max-h-80 overflow-y-auto",
-                                    for item in items {
-                                        Link {
-                                            class: "flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-zinc-100 focus-visible:bg-zinc-100 focus-visible:outline-none dark:hover:bg-zinc-800 dark:focus-visible:bg-zinc-800",
-                                            to: item.route,
-                                            onclick: move |_| focused.set(false),
-                                            span { class: "text-sm font-medium", "{item.title}" }
-                                            span { class: "truncate text-xs text-zinc-500 dark:text-zinc-400", "{item.description}" }
+                            Some(Ok(items)) if !items.named.is_empty() || !items.unnamed.is_empty() => {
+                                rsx! {
+                                    div { class: "max-h-80 overflow-y-auto",
+                                        for (category, category_items) in items.named {
+                                            section { class: "not-first:mt-2",
+                                                h2 { class: "px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400",
+                                                    "{category}"
+                                                }
+                                                for item in category_items {
+                                                    Link {
+                                                        class: "flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-zinc-100 focus-visible:bg-zinc-100 focus-visible:outline-none dark:hover:bg-zinc-800 dark:focus-visible:bg-zinc-800",
+                                                        to: item.route,
+                                                        onclick: move |_| focused.set(false),
+                                                        span { class: "text-sm font-medium", "{item.title}" }
+                                                        span { class: "truncate text-xs text-zinc-500 dark:text-zinc-400",
+                                                            "{item.description}"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if !items.unnamed.is_empty() {
+                                            section { class: "not-first:mt-2",
+                                                h2 { class: "px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400",
+                                                    "Other"
+                                                }
+                                                for item in items.unnamed {
+                                                    Link {
+                                                        class: "flex w-full flex-col gap-0.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-zinc-100 focus-visible:bg-zinc-100 focus-visible:outline-none dark:hover:bg-zinc-800 dark:focus-visible:bg-zinc-800",
+                                                        to: item.route,
+                                                        onclick: move |_| focused.set(false),
+                                                        span { class: "text-sm font-medium", "{item.title}" }
+                                                        span { class: "truncate text-xs text-zinc-500 dark:text-zinc-400",
+                                                            "{item.description}"
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                            },
+                            }
                             Some(Ok(_)) => rsx! {
                                 div { class: "px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400", "No results found." }
                             },
@@ -83,13 +112,7 @@ pub fn SearchBar(
                                 div { class: "px-3 py-2 text-sm text-red-600 dark:text-red-400", "{error}" }
                             },
                             None => rsx! {
-                                div { class: "flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400",
-                                    span {
-                                        class: "h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700 dark:border-zinc-600 dark:border-t-zinc-200",
-                                        aria_label: "Loading",
-                                    }
-                                    "Searching..."
-                                }
+                                div { class: "px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400", "Searching..." }
                             },
                         }
                     }

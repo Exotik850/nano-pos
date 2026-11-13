@@ -31,6 +31,7 @@ pub struct ProductForm {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg(feature = "server")]
 #[cfg_attr(feature = "server", derive(HasQuery))]
 #[cfg_attr(feature = "server", diesel(table_name = crate::server::schema::product))]
 #[cfg_attr(feature = "server", diesel(check_for_backend(diesel::pg::Pg)))]
@@ -95,11 +96,11 @@ mod product_search {
 
     impl From<ProductSearchResult> for SearchResult {
         fn from(value: ProductSearchResult) -> Self {
-            SearchResult {
-                route: crate::Route::EditProduct { id: value.id },
-                title: value.name,
-                description: value.sku,
-            }
+            SearchResult::new()
+                .with_route(crate::Route::EditProduct { id: value.id })
+                .with_title(value.name)
+                .with_description(value.sku)
+                .with_category("Products")
         }
     }
 
