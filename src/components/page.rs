@@ -4,10 +4,9 @@ use crate::Route;
 
 #[component]
 pub fn PageShell(
-  #[props(default, into)]
-  max_width: String, 
-  #[props(default, into)]
-  children: Element) -> Element {
+    #[props(default, into)] max_width: String,
+    #[props(default, into)] children: Element,
+) -> Element {
     rsx! {
         div { class: "mx-auto flex w-full flex-col gap-8 px-6 py-8 {max_width}", {children} }
     }
@@ -15,10 +14,8 @@ pub fn PageShell(
 
 #[component]
 pub fn PageHeader(
-    #[props(default, into)]
-    title: String,
-    #[props(default, into)]
-    description: String,
+    #[props(default, into)] title: String,
+    #[props(default, into)] description: String,
     #[props(default)] action: Option<Element>,
 ) -> Element {
     rsx! {

@@ -5,15 +5,11 @@ use dioxus_primitives::select::{SelectGroup, SelectOption};
 use crate::Route;
 use crate::components::select::{FormSelect, SelectGroupLabel};
 use crate::components::{
-    ProductLineDraft, ProductLineEditor, input::FormInput, textarea::FormTextarea,
+    ProductLineDraft, ProductLineEditor, datetime_input, input::FormInput, textarea::FormTextarea,
 };
 use crate::models::{
     Contact, InvoiceDetails, InvoiceDraft, InvoiceForm, InvoiceProductForm, Product,
 };
-
-fn datetime_input(value: NaiveDateTime) -> String {
-    value.format("%Y-%m-%dT%H:%M").to_string()
-}
 
 #[component]
 pub fn InvoiceFormView(

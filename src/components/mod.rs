@@ -20,6 +20,12 @@ pub use contact::ContactFormView;
 mod page;
 pub use page::{EmptyState, NotFoundState, PageError, PageHeader, PageShell};
 
+mod crud;
+pub use crud::{EditPage, FormPage, IndexPage, TableActions, submit_form};
+
+mod format;
+pub use format::{customer_name, datetime_input, format_date, format_price};
+
 mod credit;
 pub use credit::CreditFormView;
 
