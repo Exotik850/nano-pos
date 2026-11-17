@@ -192,3 +192,43 @@ mod credit_server {
         }
     }
 }
+
+#[cfg(feature = "server")]
+mod credit_search {
+    use crate::{api::search::SearchResult, server::search::SearchFilter};
+    use diesel::prelude::*;
+    use dioxus::server::inventory;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, HasQuery)]
+    #[diesel(table_name = crate::server::schema::credit)]
+    #[diesel(check_for_backend(diesel::pg::Pg))]
+    pub struct CreditSearchResult {
+        pub id: i32,
+        pub doc_number: String,
+        pub description: Option<String>,
+    }
+
+    impl From<CreditSearchResult> for SearchResult {
+        fn from(value: CreditSearchResult) -> Self {
+            SearchResult::new()
+                .with_route(crate::Route::EditCredit { id: value.id })
+                .with_title(format!("Credit #{}", value.doc_number))
+                .with_description(value.description.unwrap_or_default())
+                .with_category("Credits")
+        }
+    }
+
+    inventory::submit! {
+       SearchFilter::new(
+         |query, conn| {
+             use crate::server::schema::credit::dsl::*;
+             let pattern = format!("%{}%", query);
+             CreditSearchResult::query()
+                 .filter(doc_number.ilike(&pattern).or(description.ilike(&pattern)))
+                 .load(conn)
+                 .map(|results| results.into_iter().map(SearchResult::from).collect::<Vec<_>>())
+         }
+       )
+    }
+}

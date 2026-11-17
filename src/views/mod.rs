@@ -29,6 +29,9 @@ pub use products::{EditProduct, IndexProducts, NewProduct};
 mod contacts;
 pub use contacts::{EditContact, IndexContacts, NewContact};
 
+mod credits;
+pub use credits::{EditCredit, IndexCredits, NewCredit};
+
 mod invoices;
 pub use invoices::{EditInvoice, IndexInvoices, NewInvoice};
 
