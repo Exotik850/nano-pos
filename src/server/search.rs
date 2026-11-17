@@ -39,8 +39,5 @@ pub fn gather_search_results(
         }
         Ok::<_, diesel::result::Error>(())
     })?;
-    Ok(SearchResults {
-        named,
-        unnamed,
-    })
+    Ok(SearchResults { named, unnamed })
 }

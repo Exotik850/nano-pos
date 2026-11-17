@@ -117,7 +117,10 @@ mod contact_search {
             SearchResult::new()
                 .with_route(crate::Route::EditContact { id: contact.id })
                 .with_title(format!("{} {}", contact.first_name, contact.last_name))
-                .with_description(format!("Email: {}, Phone: {}", contact.email, contact.phone_number))
+                .with_description(format!(
+                    "Email: {}, Phone: {}",
+                    contact.email, contact.phone_number
+                ))
                 .with_category("Contacts")
         }
     }

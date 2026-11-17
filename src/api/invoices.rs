@@ -8,14 +8,14 @@ use crate::models::{InvoiceForm, InvoiceProductForm};
 #[cfg(feature = "server")]
 use crate::server::db::DbHandle;
 
-#[server(db: DbHandle, _session: Session)]
+#[post("/invoices", db: DbHandle, _session: Session)]
 pub async fn list_invoices() -> Result<Vec<Invoice>, ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     Invoice::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load invoices: {error}")))
 }
 
-#[server(db: DbHandle, _session: Session)]
+#[post("/invoices/{invoice_id}", db: DbHandle, _session: Session)]
 pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     match Invoice::find(&mut conn, invoice_id) {
@@ -31,7 +31,7 @@ pub async fn get_invoice(invoice_id: i32) -> Result<Option<InvoiceDetails>, Serv
     }
 }
 
-#[server(db: DbHandle, session: Session)]
+#[post("/invoices/create", db: DbHandle, session: Session)]
 pub async fn create_invoice(
     InvoiceDraft { mut form, products }: InvoiceDraft,
 ) -> Result<Invoice, ServerFnError> {
@@ -43,7 +43,7 @@ pub async fn create_invoice(
     Ok(invoice)
 }
 
-#[server(db: DbHandle, session: Session)]
+#[post("/invoices/{invoice_id}/update", db: DbHandle, session: Session)]
 pub async fn update_invoice(
     invoice_id: i32,
     InvoiceDraft { mut form, products }: InvoiceDraft,
@@ -54,8 +54,7 @@ pub async fn update_invoice(
     Invoice::update(&mut conn, invoice_id, &form, products)
         .map_err(|error| ServerFnError::Response(format!("Could not update invoice: {error}")))
 }
-
-#[server(db: DbHandle, _session: Session)]
+#[post("/invoices/{invoice_id}/delete", db: DbHandle, _session: Session)]
 pub async fn delete_invoice(invoice_id: i32) -> Result<(), ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     Invoice::delete(&mut conn, invoice_id)

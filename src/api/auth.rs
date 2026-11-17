@@ -18,7 +18,7 @@ pub struct Session {
 }
 
 /// Register a new account and start a session for the new user.
-#[server(db: DbHandle, jar: SessionCookieJar)]
+#[post("/auth/signup", db: DbHandle, jar: SessionCookieJar)]
 pub async fn signup(form: Form<SignupForm>) -> Result<Session, ServerFnError> {
     let SignupForm {
         username,
@@ -29,7 +29,7 @@ pub async fn signup(form: Form<SignupForm>) -> Result<Session, ServerFnError> {
 }
 
 /// Log in with a username and password, starting a session on success.
-#[server(db: DbHandle, jar: SessionCookieJar)]
+#[post("/auth/login", db: DbHandle, jar: SessionCookieJar)]
 pub async fn login(form: Form<LoginForm>) -> Result<Session, ServerFnError> {
     let LoginForm { username, password } = form.0;
     crate::server::auth::login_impl(&username, &password, db, jar)
@@ -40,13 +40,13 @@ pub async fn login(form: Form<LoginForm>) -> Result<Session, ServerFnError> {
 /// `jar` is a server-only extractor: the macro declares it in the
 /// `#[server(...)]` attribute, so the generated client stub takes no argument
 /// while the server handler extracts the request headers.
-#[server(db: DbHandle, jar: SessionCookieJar)]
+#[post("/auth/current", db: DbHandle, jar: SessionCookieJar)]
 pub async fn current_user() -> Result<Option<Session>, ServerFnError> {
     Ok(jar.session(&db).ok())
 }
 
 /// Clear the caller's session cookie.
-#[server]
+#[post("/auth/logout")]
 pub async fn logout() -> Result<(), ServerFnError> {
     crate::server::auth::logout_impl();
     Ok(())

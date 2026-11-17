@@ -7,14 +7,14 @@ use crate::models::{EstimateForm, EstimateProductForm};
 use crate::server::db::DbHandle;
 use dioxus::prelude::*;
 
-#[server(db: DbHandle, _session: Session)]
+#[post("/estimates", db: DbHandle, _session: Session)]
 pub async fn list_estimates() -> Result<Vec<Estimate>, ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     Estimate::all(&mut conn)
         .map_err(|error| ServerFnError::Response(format!("Could not load estimates: {error}")))
 }
 
-#[server(db: DbHandle, _session: Session)]
+#[post("/estimates/{estimate_id}", db: DbHandle, _session: Session)]
 pub async fn get_estimate(estimate_id: i32) -> Result<Option<EstimateDetails>, ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     match Estimate::find(&mut conn, estimate_id) {
@@ -30,7 +30,7 @@ pub async fn get_estimate(estimate_id: i32) -> Result<Option<EstimateDetails>, S
     }
 }
 
-#[server(db: DbHandle, session: Session)]
+#[post("/estimates/create", db: DbHandle, session: Session)]
 pub async fn create_estimate(
     EstimateDraft {
         mut estimate,
@@ -44,7 +44,7 @@ pub async fn create_estimate(
         .map_err(|error| ServerFnError::Response(format!("Could not create estimate: {error}")))
 }
 
-#[server(db: DbHandle, session: Session)]
+#[post("/estimates/{estimate_id}/update", db: DbHandle, session: Session)]
 pub async fn update_estimate(
     estimate_id: i32,
     EstimateDraft {
@@ -59,7 +59,7 @@ pub async fn update_estimate(
         .map_err(|error| ServerFnError::Response(format!("Could not update estimate: {error}")))
 }
 
-#[server(db: DbHandle, _session: Session)]
+#[post("/estimates/{estimate_id}/delete", db: DbHandle, _session: Session)]
 pub async fn delete_estimate(estimate_id: i32) -> Result<(), ServerFnError> {
     let mut conn = db.get().map_err(ServerFnError::Response)?;
     Estimate::delete(&mut conn, estimate_id)
