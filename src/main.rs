@@ -21,7 +21,7 @@ mod server;
 pub mod models;
 
 mod api;
-pub use api::{contacts, estimates, invoices, products};
+pub use api::{contacts, credits, estimates, invoices, products};
 
 #[component]
 fn LoadingFallback() -> Element {
