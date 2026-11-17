@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
-    TableCell, TableHead, TableHeaderCell, TableRow,
+    IndexPage, Table, TableActions, TableBody, TableCell, TableHead, TableHeaderCell, TableRow,
+    format_price,
 };
 use crate::models::Product;
 use crate::products::{delete_product, list_products};
@@ -14,7 +14,8 @@ fn ProductTableRow(product: Product, ondelete: EventHandler<i32>) -> Element {
         .description
         .clone()
         .unwrap_or_else(|| "No description".to_string());
-    let price = format!("${:.2}", f64::from(product.price) / 100.0);
+    let price = format_price(product.price);
+    let id = product.id;
 
     rsx! {
         TableRow {
@@ -40,22 +41,9 @@ fn ProductTableRow(product: Product, ondelete: EventHandler<i32>) -> Element {
                 "{product.quantity}"
             }
             TableCell {
-                div { class: "flex justify-end gap-2",
-                    ButtonLink {
-                        class: "px-3 py-1.5 text-sm",
-                        to: Route::EditProduct {
-                            id: product.id,
-                        },
-                        variant: ButtonVariant::Secondary,
-                        "Edit"
-                    }
-                    Button {
-                        class: "px-3 py-1.5 text-sm",
-                        variant: ButtonVariant::Secondary,
-                        r#type: "button",
-                        onclick: move |_| ondelete.call(product.id),
-                        "Delete"
-                    }
+                TableActions {
+                    edit_to: Route::EditProduct { id },
+                    ondelete: move |_| ondelete.call(id),
                 }
             }
         }
@@ -96,31 +84,25 @@ pub fn IndexProducts() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl",
-            PageHeader {
-                title: "Products",
-                description: "Manage your inventory and pricing.",
-                action: rsx! {
-                    ButtonLink { to: Route::NewProduct {}, "Add product" }
+        IndexPage {
+            title: "Products",
+            description: "Manage your inventory and pricing.",
+            empty_title: "No products yet",
+            empty_description: "Add your first product to start tracking inventory.",
+            is_empty: prods.is_empty(),
+            action: rsx! {
+                crate::components::ButtonLink { to: Route::NewProduct {}, "Add product" }
+            },
+            ProductTable {
+                products: prods,
+                ondelete: move |product_id| async move {
+                    if let Err(message) = delete_product(product_id).await {
+                        warn!("Failed to delete product: {}", message);
+                        error.set(Some(message.to_string()));
+                    } else {
+                        prods.retain(|product| product.id != product_id);
+                    }
                 },
-            }
-            if prods.is_empty() {
-                EmptyState {
-                    title: "No products yet",
-                    description: "Add your first product to start tracking inventory.",
-                }
-            } else {
-                ProductTable {
-                    products: prods,
-                    ondelete: move |product_id| async move {
-                        if let Err(message) = delete_product(product_id).await {
-                            warn!("Failed to delete product: {}", message);
-                            error.set(Some(message.to_string()));
-                        } else {
-                            prods.retain(|product| product.id != product_id);
-                        }
-                    },
-                }
             }
         }
     }
