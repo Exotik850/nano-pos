@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
-    TableRow,
+    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
+    TableCell, TableHead, TableHeaderCell, TableRow,
 };
 use crate::contacts::{delete_contact, list_contacts};
 use crate::models::Contact;
@@ -82,26 +82,16 @@ pub fn IndexContacts() -> Element {
     }
 
     rsx! {
-        div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
-            div { class: "flex flex-wrap items-end justify-between gap-4",
-                div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                        "Contacts"
-                    }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
-                        "Manage your customer contacts."
-                    }
-                }
-                ButtonLink { to: Route::NewContact {}, "Add contact" }
+        PageShell { max_width: "max-w-6xl".to_string(),
+            PageHeader {
+                title: "Contacts".to_string(),
+                description: "Manage your customer contacts.".to_string(),
+                action: rsx! { ButtonLink { to: Route::NewContact {}, "Add contact" } },
             }
             if contacts.is_empty() {
-                div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
-                    h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100",
-                        "No contacts yet"
-                    }
-                    p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400",
-                        "Add your first contact to start building your customer list."
-                    }
+                EmptyState {
+                    title: "No contacts yet".to_string(),
+                    description: "Add your first contact to start building your customer list.".to_string(),
                 }
             } else {
                 ContactTable {

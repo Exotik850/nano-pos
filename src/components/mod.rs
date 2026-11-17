@@ -14,6 +14,9 @@ pub use product::ProductFormView;
 mod contact;
 pub use contact::ContactFormView;
 
+mod page;
+pub use page::{EmptyState, PageHeader, PageShell};
+
 mod credit;
 pub use credit::CreditFormView;
 

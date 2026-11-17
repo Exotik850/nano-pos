@@ -1,7 +1,7 @@
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
-    TableRow,
+    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
+    TableCell, TableHead, TableHeaderCell, TableRow,
 };
 use crate::contacts::list_contacts;
 use crate::estimates::{delete_estimate, list_estimates};
@@ -73,26 +73,16 @@ pub fn IndexEstimates() -> Element {
     }
 
     rsx! {
-        div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
-            div { class: "flex flex-wrap items-end justify-between gap-4",
-                div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                        "Estimates"
-                    }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
-                        "Create and manage customer estimates."
-                    }
-                }
-                ButtonLink { to: Route::NewEstimate {}, "Add estimate" }
+        PageShell { max_width: "max-w-6xl".to_string(),
+            PageHeader {
+                title: "Estimates".to_string(),
+                description: "Create and manage customer estimates.".to_string(),
+                action: rsx! { ButtonLink { to: Route::NewEstimate {}, "Add estimate" } },
             }
             if estimates.is_empty() {
-                div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
-                    h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100",
-                        "No estimates yet"
-                    }
-                    p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400",
-                        "Create your first estimate to start quoting customers."
-                    }
+                EmptyState {
+                    title: "No estimates yet".to_string(),
+                    description: "Create your first estimate to start quoting customers.".to_string(),
                 }
             } else {
                 Table {

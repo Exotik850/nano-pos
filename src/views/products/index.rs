@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
-    TableRow,
+    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
+    TableCell, TableHead, TableHeaderCell, TableRow,
 };
 use crate::models::Product;
 use crate::products::{delete_product, list_products};
@@ -96,26 +96,16 @@ pub fn IndexProducts() -> Element {
     }
 
     rsx! {
-        div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
-            div { class: "flex flex-wrap items-end justify-between gap-4",
-                div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                        "Products"
-                    }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
-                        "Manage your inventory and pricing."
-                    }
-                }
-                ButtonLink { to: Route::NewProduct {}, "Add product" }
+        PageShell { max_width: "max-w-6xl".to_string(),
+            PageHeader {
+                title: "Products".to_string(),
+                description: "Manage your inventory and pricing.".to_string(),
+                action: rsx! { ButtonLink { to: Route::NewProduct {}, "Add product" } },
             }
             if prods.is_empty() {
-                div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
-                    h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100",
-                        "No products yet"
-                    }
-                    p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400",
-                        "Add your first product to start tracking inventory."
-                    }
+                EmptyState {
+                    title: "No products yet".to_string(),
+                    description: "Add your first product to start tracking inventory.".to_string(),
                 }
             } else {
                 ProductTable {

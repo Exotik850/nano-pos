@@ -1,7 +1,7 @@
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell,
-    TableRow,
+    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
+    TableCell, TableHead, TableHeaderCell, TableRow,
 };
 use crate::contacts::list_contacts;
 use crate::credits::{delete_credit, list_credits};
@@ -62,26 +62,16 @@ pub fn IndexCredits() -> Element {
         return Err(ServerFnError::Response(message).into());
     }
     rsx! {
-        div { class: "mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8",
-            div { class: "flex flex-wrap items-end justify-between gap-4",
-                div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                        "Credits"
-                    }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
-                        "Create and manage customer credits."
-                    }
-                }
-                ButtonLink { to: Route::NewCredit {}, "Add credit" }
+        PageShell { max_width: "max-w-6xl".to_string(),
+            PageHeader {
+                title: "Credits".to_string(),
+                description: "Create and manage customer credits.".to_string(),
+                action: rsx! { ButtonLink { to: Route::NewCredit {}, "Add credit" } },
             }
             if credits.is_empty() {
-                div { class: "rounded-xl border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700",
-                    h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100",
-                        "No credits yet"
-                    }
-                    p { class: "mt-2 text-sm text-zinc-500 dark:text-zinc-400",
-                        "Create your first credit to record a customer credit."
-                    }
+                EmptyState {
+                    title: "No credits yet".to_string(),
+                    description: "Create your first credit to record a customer credit.".to_string(),
                 }
             } else {
                 Table {
