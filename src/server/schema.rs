@@ -1,5 +1,33 @@
 // @generated automatically by Diesel CLI.
 diesel::table! {
+    credit (id) {
+        id -> Int4,
+        customer_id -> Int4,
+        user_id -> Int4,
+        #[max_length = 255]
+        doc_number -> Varchar,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
+        credit_date -> Timestamp,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    credit_product (id) {
+        id -> Int4,
+        credit_id -> Int4,
+        product_id -> Int4,
+        quantity -> Int4,
+        price -> Nullable<Int4>,
+        tax_rate -> Nullable<Float8>,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
     contact (id) {
         id -> Int4,
         #[max_length = 255]
@@ -121,9 +149,15 @@ diesel::joinable!(invoice -> contact (customer_id));
 diesel::joinable!(invoice -> users (user_id));
 diesel::joinable!(invoice_product -> invoice (invoice_id));
 diesel::joinable!(invoice_product -> product (product_id));
+diesel::joinable!(credit -> contact (customer_id));
+diesel::joinable!(credit -> users (user_id));
+diesel::joinable!(credit_product -> credit (credit_id));
+diesel::joinable!(credit_product -> product (product_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     contact,
+    credit,
+    credit_product,
     estimate,
     estimate_product,
     invoice,
