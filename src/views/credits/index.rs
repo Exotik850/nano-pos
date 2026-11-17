@@ -1,7 +1,7 @@
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
-    TableCell, TableHead, TableHeaderCell, TableRow,
+    IndexPage, Table, TableActions, TableBody, TableCell, TableHead, TableHeaderCell, TableRow,
+    customer_name, format_date,
 };
 use crate::contacts::list_contacts;
 use crate::credits::{delete_credit, list_credits};
@@ -10,40 +10,23 @@ use dioxus::prelude::*;
 
 #[component]
 fn CreditTableRow(credit: Credit, contacts: Vec<Contact>, ondelete: EventHandler<i32>) -> Element {
-    let customer = contacts
-        .iter()
-        .find(|contact| contact.id == credit.customer_id)
-        .map_or_else(
-            || format!("Customer #{}", credit.customer_id),
-            |contact| format!("{} {}", contact.first_name, contact.last_name),
-        );
+    let customer = customer_name(&contacts, Some(credit.customer_id));
+    let credit_date = format_date(credit.credit_date);
+    let id = credit.id;
     rsx! {
         TableRow {
             TableCell {
                 div { class: "font-medium text-zinc-900 dark:text-zinc-100", "{credit.doc_number}" }
                 div { class: "mt-1 text-sm text-zinc-500 dark:text-zinc-400", "{customer}" }
             }
-            TableCell { class: "whitespace-nowrap text-zinc-600 dark:text-zinc-300",
-                "{credit.credit_date.format(\"%Y-%m-%d\")}"
-            }
+            TableCell { class: "whitespace-nowrap text-zinc-600 dark:text-zinc-300", "{credit_date}" }
             TableCell { class: "max-w-md truncate text-zinc-600 dark:text-zinc-300",
                 "{credit.description.clone().unwrap_or_else(|| \"No description\".to_string())}"
             }
             TableCell {
-                div { class: "flex justify-end gap-2",
-                    ButtonLink {
-                        class: "px-3 py-1.5 text-sm",
-                        to: Route::EditCredit { id: credit.id },
-                        variant: ButtonVariant::Secondary,
-                        "Edit"
-                    }
-                    Button {
-                        class: "px-3 py-1.5 text-sm",
-                        variant: ButtonVariant::Secondary,
-                        r#type: "button",
-                        onclick: move |_| ondelete.call(credit.id),
-                        "Delete"
-                    }
+                TableActions {
+                    edit_to: Route::EditCredit { id },
+                    ondelete: move |_| ondelete.call(id),
                 }
             }
         }
@@ -62,42 +45,36 @@ pub fn IndexCredits() -> Element {
         return Err(ServerFnError::Response(message).into());
     }
     rsx! {
-        PageShell { max_width: "max-w-6xl",
-            PageHeader {
-                title: "Credits",
-                description: "Create and manage customer credits.",
-                action: rsx! {
-                    ButtonLink { to: Route::NewCredit {}, "Add credit" }
-                },
-            }
-            if credits.is_empty() {
-                EmptyState {
-                    title: "No credits yet",
-                    description: "Create your first credit to record a customer credit.",
-                }
-            } else {
-                Table {
-                    TableHead {
-                        tr {
-                            TableHeaderCell { "Credit" }
-                            TableHeaderCell { "Date" }
-                            TableHeaderCell { "Description" }
-                            TableHeaderCell { align_end: true, "Actions" }
-                        }
+        IndexPage {
+            title: "Credits",
+            description: "Create and manage customer credits.",
+            empty_title: "No credits yet",
+            empty_description: "Create your first credit to record a customer credit.",
+            is_empty: credits.is_empty(),
+            action: rsx! {
+                crate::components::ButtonLink { to: Route::NewCredit {}, "Add credit" }
+            },
+            Table {
+                TableHead {
+                    tr {
+                        TableHeaderCell { "Credit" }
+                        TableHeaderCell { "Date" }
+                        TableHeaderCell { "Description" }
+                        TableHeaderCell { align_end: true, "Actions" }
                     }
-                    TableBody {
-                        for credit in credits() {
-                            CreditTableRow {
-                                credit,
-                                contacts: contacts_ready.clone(),
-                                ondelete: move |credit_id| async move {
-                                    if let Err(message) = delete_credit(credit_id).await {
-                                        error.set(Some(message.to_string()));
-                                    } else {
-                                        credits.retain(|value| value.id != credit_id);
-                                    }
-                                },
-                            }
+                }
+                TableBody {
+                    for credit in credits() {
+                        CreditTableRow {
+                            credit,
+                            contacts: contacts_ready.clone(),
+                            ondelete: move |credit_id| async move {
+                                if let Err(message) = delete_credit(credit_id).await {
+                                    error.set(Some(message.to_string()));
+                                } else {
+                                    credits.retain(|value| value.id != credit_id);
+                                }
+                            },
                         }
                     }
                 }

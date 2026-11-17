@@ -1,7 +1,7 @@
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
-    TableCell, TableHead, TableHeaderCell, TableRow,
+    IndexPage, Table, TableActions, TableBody, TableCell, TableHead, TableHeaderCell, TableRow,
+    customer_name, format_date,
 };
 use crate::contacts::list_contacts;
 use crate::invoices::{delete_invoice, list_invoices};
@@ -14,14 +14,9 @@ fn InvoiceTableRow(
     contacts: Vec<Contact>,
     ondelete: EventHandler<i32>,
 ) -> Element {
-    let customer = contacts
-        .iter()
-        .find(|contact| contact.id == invoice.customer_id);
-    let customer_name = customer.map_or_else(
-        || format!("Customer #{}", invoice.customer_id),
-        |contact| format!("{} {}", contact.first_name, contact.last_name),
-    );
-    let order_date = invoice.order_date.format("%Y-%m-%d").to_string();
+    let customer_name = customer_name(&contacts, Some(invoice.customer_id));
+    let order_date = format_date(invoice.order_date);
+    let id = invoice.id;
     rsx! {
         TableRow {
             TableCell {
@@ -33,22 +28,9 @@ fn InvoiceTableRow(
                 "{invoice.description.clone().unwrap_or_else(|| \"No description\".to_string())}"
             }
             TableCell {
-                div { class: "flex justify-end gap-2",
-                    ButtonLink {
-                        class: "px-3 py-1.5 text-sm",
-                        to: Route::EditInvoice {
-                            id: invoice.id,
-                        },
-                        variant: ButtonVariant::Secondary,
-                        "Edit"
-                    }
-                    Button {
-                        class: "px-3 py-1.5 text-sm",
-                        variant: ButtonVariant::Secondary,
-                        r#type: "button",
-                        onclick: move |_| ondelete.call(invoice.id),
-                        "Delete"
-                    }
+                TableActions {
+                    edit_to: Route::EditInvoice { id },
+                    ondelete: move |_| ondelete.call(id),
                 }
             }
         }
@@ -69,42 +51,36 @@ pub fn IndexInvoices() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl",
-            PageHeader {
-                title: "Invoices",
-                description: "Create and manage customer invoices.",
-                action: rsx! {
-                    ButtonLink { to: Route::NewInvoice {}, "Add invoice" }
-                },
-            }
-            if invoices.is_empty() {
-                EmptyState {
-                    title: "No invoices yet",
-                    description: "Create your first invoice to start tracking orders.",
-                }
-            } else {
-                Table {
-                    TableHead {
-                        tr {
-                            TableHeaderCell { "Invoice" }
-                            TableHeaderCell { "Order date" }
-                            TableHeaderCell { "Description" }
-                            TableHeaderCell { align_end: true, "Actions" }
-                        }
+        IndexPage {
+            title: "Invoices",
+            description: "Create and manage customer invoices.",
+            empty_title: "No invoices yet",
+            empty_description: "Create your first invoice to start tracking orders.",
+            is_empty: invoices.is_empty(),
+            action: rsx! {
+                crate::components::ButtonLink { to: Route::NewInvoice {}, "Add invoice" }
+            },
+            Table {
+                TableHead {
+                    tr {
+                        TableHeaderCell { "Invoice" }
+                        TableHeaderCell { "Order date" }
+                        TableHeaderCell { "Description" }
+                        TableHeaderCell { align_end: true, "Actions" }
                     }
-                    TableBody {
-                        for invoice in invoices() {
-                            InvoiceTableRow {
-                                invoice,
-                                contacts: contacts_ready.clone(),
-                                ondelete: move |invoice_id| async move {
-                                    if let Err(message) = delete_invoice(invoice_id).await {
-                                        error.set(Some(message.to_string()));
-                                    } else {
-                                        invoices.retain(|invoice| invoice.id != invoice_id);
-                                    }
-                                },
-                            }
+                }
+                TableBody {
+                    for invoice in invoices() {
+                        InvoiceTableRow {
+                            invoice,
+                            contacts: contacts_ready.clone(),
+                            ondelete: move |invoice_id| async move {
+                                if let Err(message) = delete_invoice(invoice_id).await {
+                                    error.set(Some(message.to_string()));
+                                } else {
+                                    invoices.retain(|invoice| invoice.id != invoice_id);
+                                }
+                            },
                         }
                     }
                 }

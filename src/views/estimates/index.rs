@@ -1,7 +1,7 @@
 use crate::Route;
 use crate::components::{
-    Button, ButtonLink, ButtonVariant, EmptyState, PageHeader, PageShell, Table, TableBody,
-    TableCell, TableHead, TableHeaderCell, TableRow,
+    IndexPage, Table, TableActions, TableBody, TableCell, TableHead, TableHeaderCell, TableRow,
+    customer_name, format_date,
 };
 use crate::contacts::list_contacts;
 use crate::estimates::{delete_estimate, list_estimates};
@@ -14,18 +14,9 @@ fn EstimateTableRow(
     contacts: Vec<Contact>,
     ondelete: EventHandler<i32>,
 ) -> Element {
-    let customer_name = estimate
-        .customer_id
-        .map_or("No customer".to_string(), |customer_id| {
-            contacts
-                .iter()
-                .find(|contact| contact.id == customer_id)
-                .map_or_else(
-                    || format!("Customer #{customer_id}"),
-                    |contact| format!("{} {}", contact.first_name, contact.last_name),
-                )
-        });
-    let created = estimate.created_at.format("%Y-%m-%d").to_string();
+    let customer_name = customer_name(&contacts, estimate.customer_id);
+    let created = format_date(estimate.created_at);
+    let id = estimate.id;
     rsx! {
         TableRow {
             TableCell {
@@ -37,22 +28,9 @@ fn EstimateTableRow(
                 "{estimate.description.clone().unwrap_or_else(|| \"No description\".to_string())}"
             }
             TableCell {
-                div { class: "flex justify-end gap-2",
-                    ButtonLink {
-                        class: "px-3 py-1.5 text-sm",
-                        to: Route::EditEstimate {
-                            id: estimate.id,
-                        },
-                        variant: ButtonVariant::Secondary,
-                        "Edit"
-                    }
-                    Button {
-                        class: "px-3 py-1.5 text-sm",
-                        variant: ButtonVariant::Secondary,
-                        r#type: "button",
-                        onclick: move |_| ondelete.call(estimate.id),
-                        "Delete"
-                    }
+                TableActions {
+                    edit_to: Route::EditEstimate { id },
+                    ondelete: move |_| ondelete.call(id),
                 }
             }
         }
@@ -73,42 +51,36 @@ pub fn IndexEstimates() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl",
-            PageHeader {
-                title: "Estimates",
-                description: "Create and manage customer estimates.",
-                action: rsx! {
-                    ButtonLink { to: Route::NewEstimate {}, "Add estimate" }
-                },
-            }
-            if estimates.is_empty() {
-                EmptyState {
-                    title: "No estimates yet",
-                    description: "Create your first estimate to start quoting customers.",
-                }
-            } else {
-                Table {
-                    TableHead {
-                        tr {
-                            TableHeaderCell { "Estimate" }
-                            TableHeaderCell { "Created" }
-                            TableHeaderCell { "Description" }
-                            TableHeaderCell { align_end: true, "Actions" }
-                        }
+        IndexPage {
+            title: "Estimates",
+            description: "Create and manage customer estimates.",
+            empty_title: "No estimates yet",
+            empty_description: "Create your first estimate to start quoting customers.",
+            is_empty: estimates.is_empty(),
+            action: rsx! {
+                crate::components::ButtonLink { to: Route::NewEstimate {}, "Add estimate" }
+            },
+            Table {
+                TableHead {
+                    tr {
+                        TableHeaderCell { "Estimate" }
+                        TableHeaderCell { "Created" }
+                        TableHeaderCell { "Description" }
+                        TableHeaderCell { align_end: true, "Actions" }
                     }
-                    TableBody {
-                        for estimate in estimates() {
-                            EstimateTableRow {
-                                estimate,
-                                contacts: contacts_ready.clone(),
-                                ondelete: move |estimate_id| async move {
-                                    if let Err(message) = delete_estimate(estimate_id).await {
-                                        error.set(Some(message.to_string()));
-                                    } else {
-                                        estimates.retain(|estimate| estimate.id != estimate_id);
-                                    }
-                                },
-                            }
+                }
+                TableBody {
+                    for estimate in estimates() {
+                        EstimateTableRow {
+                            estimate,
+                            contacts: contacts_ready.clone(),
+                            ondelete: move |estimate_id| async move {
+                                if let Err(message) = delete_estimate(estimate_id).await {
+                                    error.set(Some(message.to_string()));
+                                } else {
+                                    estimates.retain(|estimate| estimate.id != estimate_id);
+                                }
+                            },
                         }
                     }
                 }
