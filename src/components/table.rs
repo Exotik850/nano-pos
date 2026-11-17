@@ -1,4 +1,9 @@
+use std::fmt::Display;
+
 use dioxus::prelude::*;
+use dioxus_primitives::select::SelectGroup;
+
+use crate::components::select::{Select, SelectOption};
 
 #[component]
 pub fn Table(children: Element) -> Element {
@@ -83,12 +88,17 @@ pub fn TableInput(
 }
 
 #[component]
-pub fn TableSelect(#[props(into)] value: Signal<String>, children: Element) -> Element {
+pub fn TableSelect<T: Display + Clone + PartialEq + 'static>(
+    #[props(into)] value: ReadSignal<Option<T>>,
+    #[props(default, into)] class: String,
+    #[props(default)] on_value_change: Callback<Option<T>>,
+    children: Element,
+) -> Element {
     rsx! {
-        select {
-            class: "w-full rounded-md border border-transparent bg-transparent px-2.5 py-2 text-sm text-zinc-900 outline-none transition hover:border-zinc-300 hover:bg-zinc-50 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60 dark:focus:border-zinc-400 dark:focus:ring-zinc-700",
-            value: "{value}",
-            onchange: move |event| value.set(event.value()),
+        Select::<T> {
+            class: "w-full rounded-md border border-transparent bg-transparent px-2.5 py-2 text-sm text-zinc-900 outline-none transition hover:border-zinc-300 hover:bg-zinc-50 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 dark:text-zinc-100 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/60 dark:focus:border-zinc-400 dark:focus:ring-zinc-700 {class}",
+            value,
+            on_value_change,
             {children}
         }
     }

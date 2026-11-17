@@ -1,6 +1,10 @@
 use dioxus::prelude::*;
+use dioxus_primitives::select::SelectGroup;
 
-use crate::models::Product;
+use crate::{
+    components::select::{SelectGroupLabel, SelectOption},
+    models::Product,
+};
 
 use super::{
     Button, ButtonVariant, Table, TableBody, TableCell, TableHead, TableHeaderCell, TableInput,
@@ -22,7 +26,7 @@ pub fn ProductLineEditor(
     description: String,
     #[props(default)] action: Option<Element>,
 ) -> Element {
-    let mut selected_product = use_signal(String::new);
+    let mut selected_product = use_signal(|| None);
     let mut quantity = use_signal(|| "1".to_string());
     let mut price = use_signal(|| "0".to_string());
 
@@ -53,10 +57,21 @@ pub fn ProductLineEditor(
                 TableBody {
                     TableRow {
                         TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
-                            TableSelect { value: selected_product,
-                                option { value: "", "Select" }
-                                for product in products.iter() {
-                                    option { value: "{product.id}", "{product.name} ({product.sku})" }
+                            TableSelect::<i32> {
+                                value: selected_product(),
+                                on_value_change: move |product_id| {
+                                    selected_product.set(product_id);
+                                },
+                                SelectGroup { class: "w-full",
+                                    SelectGroupLabel { "Products" }
+                                    for (index, product) in products.iter().enumerate() {
+                                        SelectOption::<i32> {
+                                            index,
+                                            value: product.id,
+                                            text_value: "{product.name} ({product.sku})",
+                                            "{product.name} ({product.sku})"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -81,7 +96,7 @@ pub fn ProductLineEditor(
                             Button {
                                 r#type: "button",
                                 onclick: move |_| {
-                                    let Ok(product_id) = selected_product().parse::<i32>() else {
+                                    let Some(product_id) = selected_product() else {
                                         return;
                                     };
                                     let Ok(parsed_quantity) = quantity().parse::<i32>() else {
@@ -96,7 +111,7 @@ pub fn ProductLineEditor(
                                             quantity: parsed_quantity,
                                             price: parsed_price,
                                         });
-                                    selected_product.set(String::new());
+                                    selected_product.set(None);
                                     quantity.set("1".to_string());
                                     price.set("0".to_string());
                                 },
