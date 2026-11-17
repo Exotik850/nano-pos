@@ -11,6 +11,9 @@ pub use auth_form::AuthForm;
 mod product;
 pub use product::ProductFormView;
 
+mod product_lines;
+pub use product_lines::{ProductLineDraft, ProductLineEditor};
+
 mod contact;
 pub use contact::ContactFormView;
 
