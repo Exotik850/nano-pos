@@ -96,16 +96,18 @@ pub fn IndexProducts() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl".to_string(),
+        PageShell { max_width: "max-w-6xl",
             PageHeader {
-                title: "Products".to_string(),
-                description: "Manage your inventory and pricing.".to_string(),
-                action: rsx! { ButtonLink { to: Route::NewProduct {}, "Add product" } },
+                title: "Products",
+                description: "Manage your inventory and pricing.",
+                action: rsx! {
+                    ButtonLink { to: Route::NewProduct {}, "Add product" }
+                },
             }
             if prods.is_empty() {
                 EmptyState {
-                    title: "No products yet".to_string(),
-                    description: "Add your first product to start tracking inventory.".to_string(),
+                    title: "No products yet",
+                    description: "Add your first product to start tracking inventory.",
                 }
             } else {
                 ProductTable {

@@ -73,16 +73,18 @@ pub fn IndexEstimates() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl".to_string(),
+        PageShell { max_width: "max-w-6xl",
             PageHeader {
-                title: "Estimates".to_string(),
-                description: "Create and manage customer estimates.".to_string(),
-                action: rsx! { ButtonLink { to: Route::NewEstimate {}, "Add estimate" } },
+                title: "Estimates",
+                description: "Create and manage customer estimates.",
+                action: rsx! {
+                    ButtonLink { to: Route::NewEstimate {}, "Add estimate" }
+                },
             }
             if estimates.is_empty() {
                 EmptyState {
-                    title: "No estimates yet".to_string(),
-                    description: "Create your first estimate to start quoting customers.".to_string(),
+                    title: "No estimates yet",
+                    description: "Create your first estimate to start quoting customers.",
                 }
             } else {
                 Table {

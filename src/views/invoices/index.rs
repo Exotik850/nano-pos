@@ -69,16 +69,18 @@ pub fn IndexInvoices() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl".to_string(),
+        PageShell { max_width: "max-w-6xl",
             PageHeader {
-                title: "Invoices".to_string(),
-                description: "Create and manage customer invoices.".to_string(),
-                action: rsx! { ButtonLink { to: Route::NewInvoice {}, "Add invoice" } },
+                title: "Invoices",
+                description: "Create and manage customer invoices.",
+                action: rsx! {
+                    ButtonLink { to: Route::NewInvoice {}, "Add invoice" }
+                },
             }
             if invoices.is_empty() {
                 EmptyState {
-                    title: "No invoices yet".to_string(),
-                    description: "Create your first invoice to start tracking orders.".to_string(),
+                    title: "No invoices yet",
+                    description: "Create your first invoice to start tracking orders.",
                 }
             } else {
                 Table {

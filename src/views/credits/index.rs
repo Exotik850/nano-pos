@@ -62,16 +62,18 @@ pub fn IndexCredits() -> Element {
         return Err(ServerFnError::Response(message).into());
     }
     rsx! {
-        PageShell { max_width: "max-w-6xl".to_string(),
+        PageShell { max_width: "max-w-6xl",
             PageHeader {
-                title: "Credits".to_string(),
-                description: "Create and manage customer credits.".to_string(),
-                action: rsx! { ButtonLink { to: Route::NewCredit {}, "Add credit" } },
+                title: "Credits",
+                description: "Create and manage customer credits.",
+                action: rsx! {
+                    ButtonLink { to: Route::NewCredit {}, "Add credit" }
+                },
             }
             if credits.is_empty() {
                 EmptyState {
-                    title: "No credits yet".to_string(),
-                    description: "Create your first credit to record a customer credit.".to_string(),
+                    title: "No credits yet",
+                    description: "Create your first credit to record a customer credit.",
                 }
             } else {
                 Table {

@@ -51,17 +51,87 @@ pub fn EstimateFormView(
             .unwrap_or_default()
     });
 
-    rsx! { form { class: "flex w-full max-w-5xl flex-col gap-6", onsubmit: move |event| {
-        event.prevent_default();
-        if doc_number().trim().is_empty() { onsubmit.call(Err("Document number is required.".to_string())); return; }
-        onsubmit.call(Ok(EstimateDraft { estimate: EstimateForm { customer_id: customer_id(), user_id: 0, doc_number: doc_number(), description: (!description().is_empty()).then(&*description) }, products: lines().into_iter().map(|line| EstimateProductForm { estimate_id: 0, product_id: line.product_id, quantity: line.quantity, price: line.price, tax_rate: None, description: None }).collect() }));
-    },
-        div { class: "grid gap-4 md:grid-cols-2",
-            FormInput { label: "Document number", name: "doc_number", required: true, value: doc_number }
-            div { class: "flex w-full flex-col gap-1", FormSelect::<i32> { label: "Customer", name: "customer_id", on_value_change: move |value| customer_id.set(value), SelectGroup { class: "w-full", SelectGroupLabel { "Select a customer" } for (index, contact) in contacts.into_iter().enumerate() { SelectOption::<i32> { index, value: contact.id, text_value: "{contact.first_name} {contact.last_name} ({contact.email})", "{contact.first_name} {contact.last_name} ({contact.email})" } } } } }
+    rsx! {
+        form {
+            class: "flex w-full max-w-5xl flex-col gap-6",
+            onsubmit: move |event| {
+                event.prevent_default();
+                if doc_number().trim().is_empty() {
+                    onsubmit.call(Err("Document number is required.".to_string()));
+                    return;
+                }
+                onsubmit
+                    .call(
+                        Ok(EstimateDraft {
+                            estimate: EstimateForm {
+                                customer_id: customer_id(),
+                                user_id: 0,
+                                doc_number: doc_number(),
+                                description: (!description().is_empty()).then(&*description),
+                            },
+                            products: lines()
+                                .into_iter()
+                                .map(|line| EstimateProductForm {
+                                    estimate_id: 0,
+                                    product_id: line.product_id,
+                                    quantity: line.quantity,
+                                    price: line.price,
+                                    tax_rate: None,
+                                    description: None,
+                                })
+                                .collect(),
+                        }),
+                    );
+            },
+            div { class: "grid gap-4 md:grid-cols-2",
+                FormInput {
+                    label: "Document number",
+                    name: "doc_number",
+                    required: true,
+                    value: doc_number,
+                }
+                div { class: "flex w-full flex-col gap-1",
+                    FormSelect::<i32> {
+                        label: "Customer",
+                        name: "customer_id",
+                        on_value_change: move |value| customer_id.set(value),
+                        SelectGroup { class: "w-full",
+                            SelectGroupLabel { "Select a customer" }
+                            for (index, contact) in contacts.into_iter().enumerate() {
+                                SelectOption::<i32> {
+                                    index,
+                                    value: contact.id,
+                                    text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
+                                    "{contact.first_name} {contact.last_name} ({contact.email})"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            FormTextarea {
+                label: "Description",
+                name: "description",
+                value: description,
+                placeholder: "Add notes for this estimate",
+                resize: "none",
+                class: "min-h-24 w-full",
+            }
+            ProductLineEditor {
+                products,
+                lines,
+                heading: "Estimate products",
+                description: "Attach products and quantities to this estimate.",
+                action: rsx! {
+                    crate::components::ButtonLink {
+                        to: Route::IndexProducts {},
+                        variant: crate::components::ButtonVariant::Secondary,
+                        class: "px-3 py-1.5 text-sm",
+                        "Manage products"
+                    }
+                },
+            }
+            crate::components::Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
         }
-        FormTextarea { label: "Description", name: "description", value: description, placeholder: "Add notes for this estimate", resize: "none", class: "min-h-24 w-full" }
-        ProductLineEditor { products, lines, heading: "Estimate products".to_string(), description: "Attach products and quantities to this estimate.".to_string(), action: rsx! { crate::components::ButtonLink { to: Route::IndexProducts {}, variant: crate::components::ButtonVariant::Secondary, class: "px-3 py-1.5 text-sm", "Manage products" } } }
-        crate::components::Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
-    } }
+    }
 }

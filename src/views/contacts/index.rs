@@ -82,16 +82,18 @@ pub fn IndexContacts() -> Element {
     }
 
     rsx! {
-        PageShell { max_width: "max-w-6xl".to_string(),
+        PageShell { max_width: "max-w-6xl",
             PageHeader {
-                title: "Contacts".to_string(),
-                description: "Manage your customer contacts.".to_string(),
-                action: rsx! { ButtonLink { to: Route::NewContact {}, "Add contact" } },
+                title: "Contacts",
+                description: "Manage your customer contacts.",
+                action: rsx! {
+                    ButtonLink { to: Route::NewContact {}, "Add contact" }
+                },
             }
             if contacts.is_empty() {
                 EmptyState {
-                    title: "No contacts yet".to_string(),
-                    description: "Add your first contact to start building your customer list.".to_string(),
+                    title: "No contacts yet",
+                    description: "Add your first contact to start building your customer list.",
                 }
             } else {
                 ContactTable {

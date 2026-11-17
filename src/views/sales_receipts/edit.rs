@@ -21,11 +21,17 @@ pub fn EditSalesReceipt(id: i32) -> Element {
         Some(receipt) => rsx! {
             div { class: "mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-8",
                 div {
-                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Edit sales receipt" }
-                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400", "Update sales receipt {receipt.sales_receipt.doc_number}." }
+                    h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                        "Edit sales receipt"
+                    }
+                    p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
+                        "Update sales receipt {receipt.sales_receipt.doc_number}."
+                    }
                 }
                 if let Some(message) = error() {
-                    p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200", "{message}" }
+                    p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
+                        "{message}"
+                    }
                 }
                 SalesReceiptFormView {
                     initial: receipt,
@@ -33,13 +39,23 @@ pub fn EditSalesReceipt(id: i32) -> Element {
                     products,
                     submit_label: if loading() { "Saving..." } else { "Save changes" },
                     onsubmit: move |draft: Result<SalesReceiptDraft, String>| async move {
-                        if loading() { return; }
-                        let Ok(draft) = draft else { error.set(Some(draft.unwrap_err())); return; };
+                        if loading() {
+                            return;
+                        }
+                        let Ok(draft) = draft else {
+                            error.set(Some(draft.unwrap_err()));
+                            return;
+                        };
                         loading.set(true);
                         error.set(None);
                         match update_sales_receipt(id, draft).await {
-                            Ok(_) => { navigator.replace(Route::IndexSalesReceipts {}); },
-                            Err(message) => { error.set(Some(message.to_string())); loading.set(false); }
+                            Ok(_) => {
+                                navigator.replace(Route::IndexSalesReceipts {});
+                            }
+                            Err(message) => {
+                                error.set(Some(message.to_string()));
+                                loading.set(false);
+                            }
                         }
                     },
                 }
@@ -47,8 +63,14 @@ pub fn EditSalesReceipt(id: i32) -> Element {
         },
         None => rsx! {
             div { class: "mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8",
-                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100", "Sales receipt not found" }
-                Link { to: Route::IndexSalesReceipts {}, class: "text-zinc-700 underline dark:text-zinc-300", "Back to sales receipts" }
+                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
+                    "Sales receipt not found"
+                }
+                Link {
+                    to: Route::IndexSalesReceipts {},
+                    class: "text-zinc-700 underline dark:text-zinc-300",
+                    "Back to sales receipts"
+                }
             }
         },
     }

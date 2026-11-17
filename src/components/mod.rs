@@ -18,7 +18,7 @@ mod contact;
 pub use contact::ContactFormView;
 
 mod page;
-pub use page::{EmptyState, PageHeader, PageShell};
+pub use page::{EmptyState, NotFoundState, PageError, PageHeader, PageShell};
 
 mod credit;
 pub use credit::CreditFormView;

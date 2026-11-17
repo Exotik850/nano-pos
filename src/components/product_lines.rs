@@ -31,19 +31,25 @@ pub fn ProductLineEditor(
             div {
                 div { class: "flex flex-wrap items-end justify-between gap-3",
                     div {
-                        h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100", "{heading}" }
+                        h2 { class: "text-lg font-semibold text-zinc-900 dark:text-zinc-100",
+                            "{heading}"
+                        }
                         p { class: "text-sm text-zinc-500 dark:text-zinc-400", "{description}" }
                     }
-                    if let Some(action) = action { {action} }
+                    if let Some(action) = action {
+                        {action}
+                    }
                 }
             }
             Table {
-                TableHead { tr {
-                    TableHeaderCell { "Product" }
-                    TableHeaderCell { align_end: true, "Quantity" }
-                    TableHeaderCell { align_end: true, "Price" }
-                    TableHeaderCell { align_end: true, "Actions" }
-                } }
+                TableHead {
+                    tr {
+                        TableHeaderCell { "Product" }
+                        TableHeaderCell { align_end: true, "Quantity" }
+                        TableHeaderCell { align_end: true, "Price" }
+                        TableHeaderCell { align_end: true, "Actions" }
+                    }
+                }
                 TableBody {
                     TableRow {
                         TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
@@ -55,19 +61,41 @@ pub fn ProductLineEditor(
                             }
                         }
                         TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
-                            TableInput { name: "line_quantity", r#type: "number", placeholder: "1", value: quantity }
+                            TableInput {
+                                name: "line_quantity",
+                                r#type: "number",
+                                placeholder: "1",
+                                value: quantity,
+                            }
                         }
                         TableCell { class: "bg-zinc-50 dark:bg-zinc-800/40",
-                            TableInput { name: "line_price", r#type: "number", value: price }
+                            TableInput {
+                                name: "line_price",
+                                r#type: "number",
+                                value: price,
+                            }
                         }
-                        TableCell { align_end: true, class: "bg-zinc-50 dark:bg-zinc-800/40",
+                        TableCell {
+                            align_end: true,
+                            class: "bg-zinc-50 dark:bg-zinc-800/40",
                             Button {
                                 r#type: "button",
                                 onclick: move |_| {
-                                    let Ok(product_id) = selected_product().parse::<i32>() else { return; };
-                                    let Ok(parsed_quantity) = quantity().parse::<i32>() else { return; };
-                                    let parsed_price = (!price().is_empty()).then(|| price().parse::<i32>().ok()).flatten();
-                                    lines.push(ProductLineDraft { product_id, quantity: parsed_quantity, price: parsed_price });
+                                    let Ok(product_id) = selected_product().parse::<i32>() else {
+                                        return;
+                                    };
+                                    let Ok(parsed_quantity) = quantity().parse::<i32>() else {
+                                        return;
+                                    };
+                                    let parsed_price = (!price().is_empty())
+                                        .then(|| price().parse::<i32>().ok())
+                                        .flatten();
+                                    lines
+                                        .push(ProductLineDraft {
+                                            product_id,
+                                            quantity: parsed_quantity,
+                                            price: parsed_price,
+                                        });
                                     selected_product.set(String::new());
                                     quantity.set("1".to_string());
                                     price.set("0".to_string());
@@ -78,8 +106,19 @@ pub fn ProductLineEditor(
                     }
                     for line in lines() {
                         {
-                            let product_name = products.iter().find(|product| product.id == line.product_id).map_or_else(|| format!("Product #{}", line.product_id), |product| product.name.clone());
-                            let line_price = line.price.map_or_else(|| "-".to_string(), |value| format!("${:.2}", f64::from(value) / 100.0));
+                            let product_name = products
+                                .iter()
+                                .find(|product| product.id == line.product_id)
+                                .map_or_else(
+                                    || format!("Product #{}", line.product_id),
+                                    |product| product.name.clone(),
+                                );
+                            let line_price = line
+                                .price
+                                .map_or_else(
+                                    || "-".to_string(),
+                                    |value| format!("${:.2}", f64::from(value) / 100.0),
+                                );
                             rsx! {
                                 TableRow {
                                     TableCell { "{product_name}" }

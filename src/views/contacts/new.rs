@@ -2,7 +2,7 @@ use dioxus::fullstack::Form;
 use dioxus::prelude::*;
 
 use crate::Route;
-use crate::components::ContactFormView;
+use crate::components::{ContactFormView, PageError, PageHeader, PageShell};
 use crate::contacts::create_contact;
 use crate::models::ContactForm;
 
@@ -13,17 +13,13 @@ pub fn NewContact() -> Element {
     let mut loading = use_signal(|| false);
 
     rsx! {
-        div { class: "mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-8",
-            div {
-                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                    "Add contact"
-                }
-                p { class: "mt-1 text-zinc-500 dark:text-zinc-400", "Create a customer contact." }
+        PageShell { max_width: "max-w-3xl",
+            PageHeader {
+                title: "Add contact",
+                description: "Create a customer contact.",
             }
             if let Some(message) = error() {
-                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
-                    "{message}"
-                }
+                PageError { message }
             }
             ContactFormView {
                 submit_label: if loading() { "Creating..." } else { "Create contact" },

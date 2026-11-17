@@ -2,7 +2,7 @@ use dioxus::fullstack::Form;
 use dioxus::prelude::*;
 
 use crate::Route;
-use crate::components::ProductFormView;
+use crate::components::{PageError, PageHeader, PageShell, ProductFormView};
 use crate::models::ProductForm;
 use crate::products::create_product;
 
@@ -13,19 +13,13 @@ pub fn NewProduct() -> Element {
     let mut loading = use_signal(|| false);
 
     rsx! {
-        div { class: "mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-8",
-            div {
-                h1 { class: "text-3xl font-bold text-zinc-900 dark:text-zinc-100",
-                    "Add product"
-                }
-                p { class: "mt-1 text-zinc-500 dark:text-zinc-400",
-                    "Create an item for your inventory."
-                }
+        PageShell { max_width: "max-w-3xl",
+            PageHeader {
+                title: "Add product",
+                description: "Create an item for your inventory.",
             }
             if let Some(message) = error() {
-                p { class: "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-200",
-                    "{message}"
-                }
+                PageError { message }
             }
             ProductFormView {
                 submit_label: if loading() { "Creating..." } else { "Create product" },
