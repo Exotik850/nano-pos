@@ -3,9 +3,10 @@
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
 use views::{
-    EditContact, EditCredit, EditEstimate, EditInvoice, EditProduct, Home, IndexContacts,
-    IndexCredits, IndexEstimates, IndexInvoices, IndexProducts, Login, Navbar, NewContact,
-    NewCredit, NewEstimate, NewInvoice, NewProduct, Sidebar, Signup,
+    EditContact, EditCredit, EditEstimate, EditInvoice, EditProduct, EditSalesReceipt, Home,
+    IndexContacts, IndexCredits, IndexEstimates, IndexInvoices, IndexProducts, IndexSalesReceipts,
+    Login, Navbar, NewContact, NewCredit, NewEstimate, NewInvoice, NewProduct, NewSalesReceipt,
+    Sidebar, Signup,
 };
 
 /// Define a components module that contains all shared components for our app.
@@ -123,6 +124,12 @@ enum Route {
         NewCredit {},
         #[route("/credits/:id/edit")]
         EditCredit { id: i32 },
+        #[route("/sales-receipts")]
+        IndexSalesReceipts {},
+        #[route("/sales-receipts/new")]
+        NewSalesReceipt {},
+        #[route("/sales-receipts/:id/edit")]
+        EditSalesReceipt { id: i32 },
 }
 
 // We can import assets in dioxus with the `asset!` macro. This macro takes a path to an asset relative to the crate root.

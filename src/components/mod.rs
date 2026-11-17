@@ -34,3 +34,6 @@ pub mod textarea;
 mod searchbar;
 pub use searchbar::SearchBar;
 pub mod select;
+
+mod sales_receipt;
+pub use sales_receipt::SalesReceiptFormView;

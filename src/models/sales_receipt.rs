@@ -194,3 +194,43 @@ mod sales_receipt_server {
         }
     }
 }
+
+#[cfg(feature = "server")]
+mod sales_receipt_search {
+    use crate::{api::search::SearchResult, server::search::SearchFilter};
+    use diesel::prelude::*;
+    use dioxus::server::inventory;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, HasQuery)]
+    #[diesel(table_name = crate::server::schema::sales_receipt)]
+    #[diesel(check_for_backend(diesel::pg::Pg))]
+    pub struct SalesReceiptSearchResult {
+        pub id: i32,
+        pub doc_number: String,
+        pub description: Option<String>,
+    }
+
+    impl From<SalesReceiptSearchResult> for SearchResult {
+        fn from(value: SalesReceiptSearchResult) -> Self {
+            SearchResult::new()
+                .with_route(crate::Route::EditSalesReceipt { id: value.id })
+                .with_title(format!("Sales receipt #{}", value.doc_number))
+                .with_description(value.description.unwrap_or_default())
+                .with_category("Sales receipts")
+        }
+    }
+
+    inventory::submit! {
+       SearchFilter::new(
+         |query, conn| {
+             use crate::server::schema::sales_receipt::dsl::*;
+             let pattern = format!("%{}%", query);
+             SalesReceiptSearchResult::query()
+                 .filter(doc_number.ilike(&pattern).or(description.ilike(&pattern)))
+                 .load(conn)
+                 .map(|results| results.into_iter().map(SearchResult::from).collect::<Vec<_>>())
+         }
+       )
+    }
+}

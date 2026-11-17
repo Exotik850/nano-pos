@@ -37,3 +37,6 @@ pub use invoices::{EditInvoice, IndexInvoices, NewInvoice};
 
 mod estimates;
 pub use estimates::{EditEstimate, IndexEstimates, NewEstimate};
+
+mod sales_receipts;
+pub use sales_receipts::{EditSalesReceipt, IndexSalesReceipts, NewSalesReceipt};
