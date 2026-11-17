@@ -92,7 +92,13 @@ pub fn DocumentForm(
                 resize: "none",
                 class: "min-h-24 w-full",
             }
-            ProductLineEditor { products, lines, heading, description: line_description, action }
+            ProductLineEditor {
+                products,
+                lines,
+                heading,
+                description: line_description,
+                action,
+            }
             Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
         }
     }

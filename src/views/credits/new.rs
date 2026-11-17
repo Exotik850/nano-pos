@@ -30,13 +30,19 @@ pub fn NewCredit() -> Element {
                         error.set(Some(draft.unwrap_err()));
                         return;
                     };
-                    submit_form(loading, error, navigator, Route::IndexCredits {}, || async move {
-                        create_credit(draft)
-                            .await
-                            .map(|_| ())
-                            .map_err(|message| message.to_string())
-                    })
-                    .await;
+                    submit_form(
+                            loading,
+                            error,
+                            navigator,
+                            Route::IndexCredits {},
+                            || async move {
+                                create_credit(draft)
+                                    .await
+                                    .map(|_| ())
+                                    .map_err(|message| message.to_string())
+                            },
+                        )
+                        .await;
                 },
             }
         }

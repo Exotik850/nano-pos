@@ -21,13 +21,19 @@ pub fn NewProduct() -> Element {
             ProductFormView {
                 submit_label: if loading() { "Creating..." } else { "Create product" },
                 onsubmit: move |draft: ProductForm| async move {
-                    submit_form(loading, error, navigator, Route::IndexProducts {}, || async move {
-                        create_product(Form(draft))
-                            .await
-                            .map(|_| ())
-                            .map_err(|message| message.to_string())
-                    })
-                    .await;
+                    submit_form(
+                            loading,
+                            error,
+                            navigator,
+                            Route::IndexProducts {},
+                            || async move {
+                                create_product(Form(draft))
+                                    .await
+                                    .map(|_| ())
+                                    .map_err(|message| message.to_string())
+                            },
+                        )
+                        .await;
                 },
             }
         }

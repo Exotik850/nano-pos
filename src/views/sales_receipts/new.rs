@@ -30,13 +30,19 @@ pub fn NewSalesReceipt() -> Element {
                         error.set(Some(draft.unwrap_err()));
                         return;
                     };
-                    submit_form(loading, error, navigator, Route::IndexSalesReceipts {}, || async move {
-                        create_sales_receipt(draft)
-                            .await
-                            .map(|_| ())
-                            .map_err(|message| message.to_string())
-                    })
-                    .await;
+                    submit_form(
+                            loading,
+                            error,
+                            navigator,
+                            Route::IndexSalesReceipts {},
+                            || async move {
+                                create_sales_receipt(draft)
+                                    .await
+                                    .map(|_| ())
+                                    .map_err(|message| message.to_string())
+                            },
+                        )
+                        .await;
                 },
             }
         }

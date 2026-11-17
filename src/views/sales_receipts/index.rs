@@ -70,7 +70,11 @@ pub fn IndexSalesReceipts() -> Element {
                 TableBody {
                     for receipt in receipts() {
                         SalesReceiptTableRow {
-                            contacts: contacts_ready.iter().find(|c| c.id == receipt.customer_id).cloned().unwrap_or_default(),
+                            contacts: contacts_ready
+                                .iter()
+                                .find(|c| c.id == receipt.customer_id)
+                                .cloned()
+                                .unwrap_or_default(),
                             receipt,
                             ondelete: move |receipt_id| async move {
                                 if let Err(message) = delete_sales_receipt(receipt_id).await {

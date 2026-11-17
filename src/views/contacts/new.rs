@@ -21,13 +21,19 @@ pub fn NewContact() -> Element {
             ContactFormView {
                 submit_label: if loading() { "Creating..." } else { "Create contact" },
                 onsubmit: move |draft: ContactForm| async move {
-                    submit_form(loading, error, navigator, Route::IndexContacts {}, || async move {
-                        create_contact(Form(draft))
-                            .await
-                            .map(|_| ())
-                            .map_err(|message| message.to_string())
-                    })
-                    .await;
+                    submit_form(
+                            loading,
+                            error,
+                            navigator,
+                            Route::IndexContacts {},
+                            || async move {
+                                create_contact(Form(draft))
+                                    .await
+                                    .map(|_| ())
+                                    .map_err(|message| message.to_string())
+                            },
+                        )
+                        .await;
                 },
             }
         }

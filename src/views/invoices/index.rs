@@ -72,7 +72,11 @@ pub fn IndexInvoices() -> Element {
                 TableBody {
                     for invoice in invoices() {
                         InvoiceTableRow {
-                            contact: contacts_ready.iter().find(|c| c.id == invoice.customer_id).cloned().unwrap_or_default(),
+                            contact: contacts_ready
+                                .iter()
+                                .find(|c| c.id == invoice.customer_id)
+                                .cloned()
+                                .unwrap_or_default(),
                             invoice,
                             ondelete: move |invoice_id| async move {
                                 if let Err(message) = delete_invoice(invoice_id).await {

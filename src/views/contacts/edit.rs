@@ -42,13 +42,19 @@ pub fn EditContact(id: i32) -> Element {
                     initial: contact,
                     submit_label: if loading() { "Saving..." } else { "Save changes" },
                     onsubmit: move |draft: ContactForm| async move {
-                        submit_form(loading, error, navigator, Route::IndexContacts {}, || async move {
-                            update_contact(id, draft)
-                                .await
-                                .map(|_| ())
-                                .map_err(|message| message.to_string())
-                        })
-                        .await;
+                        submit_form(
+                                loading,
+                                error,
+                                navigator,
+                                Route::IndexContacts {},
+                                || async move {
+                                    update_contact(id, draft)
+                                        .await
+                                        .map(|_| ())
+                                        .map_err(|message| message.to_string())
+                                },
+                            )
+                            .await;
                     },
                 }
             }

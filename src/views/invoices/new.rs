@@ -32,13 +32,19 @@ pub fn NewInvoice() -> Element {
                         error.set(Some(draft.unwrap_err()));
                         return;
                     };
-                    submit_form(loading, error, navigator, Route::IndexInvoices {}, || async move {
-                        create_invoice(draft)
-                            .await
-                            .map(|_| ())
-                            .map_err(|message| message.to_string())
-                    })
-                    .await;
+                    submit_form(
+                            loading,
+                            error,
+                            navigator,
+                            Route::IndexInvoices {},
+                            || async move {
+                                create_invoice(draft)
+                                    .await
+                                    .map(|_| ())
+                                    .map_err(|message| message.to_string())
+                            },
+                        )
+                        .await;
                 },
             }
         }

@@ -100,16 +100,20 @@ pub fn EditPage(
                 PageError { message }
             }
         };
-    }
-
-    if !found {
-        return rsx! {
-            NotFoundState { resource, back_to, "{back_label}" }
-        };
-    }
-
+    } 
+    
     rsx! {
-        FormPage { title, description, error, max_width, {children} }
+        if !found {
+            NotFoundState { resource, back_to, "{back_label}" }
+        } else {
+            FormPage {
+                title,
+                description,
+                error,
+                max_width,
+                {children}
+            }
+        }
     }
 }
 

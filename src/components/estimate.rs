@@ -94,7 +94,7 @@ pub fn EstimateFormView(
                                 .collect(),
                         }),
                     );
-            }
+            },
         }
     }
 }

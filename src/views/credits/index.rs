@@ -66,7 +66,11 @@ pub fn IndexCredits() -> Element {
                 TableBody {
                     for credit in credits() {
                         CreditTableRow {
-                            contacts: contacts_ready.iter().find(|c| c.id == credit.customer_id).cloned().unwrap_or_default(),
+                            contacts: contacts_ready
+                                .iter()
+                                .find(|c| c.id == credit.customer_id)
+                                .cloned()
+                                .unwrap_or_default(),
                             credit,
                             ondelete: move |credit_id| async move {
                                 if let Err(message) = delete_credit(credit_id).await {

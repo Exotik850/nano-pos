@@ -37,13 +37,19 @@ pub fn EditProduct(id: i32) -> Element {
                     initial: product,
                     submit_label: if loading() { "Saving..." } else { "Save changes" },
                     onsubmit: move |draft: ProductForm| async move {
-                        submit_form(loading, error, navigator, Route::IndexProducts {}, || async move {
-                            update_product(id, draft)
-                                .await
-                                .map(|_| ())
-                                .map_err(|message| message.to_string())
-                        })
-                        .await;
+                        submit_form(
+                                loading,
+                                error,
+                                navigator,
+                                Route::IndexProducts {},
+                                || async move {
+                                    update_product(id, draft)
+                                        .await
+                                        .map(|_| ())
+                                        .map_err(|message| message.to_string())
+                                },
+                            )
+                            .await;
                     },
                 }
             }
