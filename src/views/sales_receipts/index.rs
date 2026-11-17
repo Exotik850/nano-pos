@@ -11,10 +11,10 @@ use dioxus::prelude::*;
 #[component]
 fn SalesReceiptTableRow(
     receipt: SalesReceipt,
-    contacts: Vec<Contact>,
+    contacts: Contact,
     ondelete: EventHandler<i32>,
 ) -> Element {
-    let customer = customer_name(&contacts, Some(receipt.customer_id));
+    let customer = customer_name(&[contacts], Some(receipt.customer_id));
     let receipt_date = format_date(receipt.sales_receipt_date);
     let id = receipt.id;
     rsx! {
@@ -70,8 +70,8 @@ pub fn IndexSalesReceipts() -> Element {
                 TableBody {
                     for receipt in receipts() {
                         SalesReceiptTableRow {
+                            contacts: contacts_ready.iter().find(|c| c.id == receipt.customer_id).cloned().unwrap_or_default(),
                             receipt,
-                            contacts: contacts_ready.clone(),
                             ondelete: move |receipt_id| async move {
                                 if let Err(message) = delete_sales_receipt(receipt_id).await {
                                     error.set(Some(message.to_string()));

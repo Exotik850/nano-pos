@@ -9,8 +9,8 @@ use crate::models::{Contact, Credit};
 use dioxus::prelude::*;
 
 #[component]
-fn CreditTableRow(credit: Credit, contacts: Vec<Contact>, ondelete: EventHandler<i32>) -> Element {
-    let customer = customer_name(&contacts, Some(credit.customer_id));
+fn CreditTableRow(credit: Credit, contacts: Contact, ondelete: EventHandler<i32>) -> Element {
+    let customer = customer_name(&[contacts], Some(credit.customer_id));
     let credit_date = format_date(credit.credit_date);
     let id = credit.id;
     rsx! {
@@ -66,8 +66,8 @@ pub fn IndexCredits() -> Element {
                 TableBody {
                     for credit in credits() {
                         CreditTableRow {
+                            contacts: contacts_ready.iter().find(|c| c.id == credit.customer_id).cloned().unwrap_or_default(),
                             credit,
-                            contacts: contacts_ready.clone(),
                             ondelete: move |credit_id| async move {
                                 if let Err(message) = delete_credit(credit_id).await {
                                     error.set(Some(message.to_string()));
