@@ -14,6 +14,9 @@ pub use product::ProductFormView;
 mod product_lines;
 pub use product_lines::{ProductLineDraft, ProductLineEditor};
 
+mod document;
+pub use document::DocumentForm;
+
 mod contact;
 pub use contact::ContactFormView;
 

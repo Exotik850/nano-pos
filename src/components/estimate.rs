@@ -1,11 +1,7 @@
 use dioxus::prelude::*;
-use dioxus_primitives::select::SelectGroup;
 
 use crate::Route;
-use crate::components::select::{FormSelect, SelectGroupLabel, SelectOption};
-use crate::components::{
-    ProductLineDraft, ProductLineEditor, input::FormInput, textarea::FormTextarea,
-};
+use crate::components::{ButtonLink, ButtonVariant, DocumentForm, ProductLineDraft};
 use crate::models::{
     Contact, EstimateDetails, EstimateDraft, EstimateForm, EstimateProductForm, Product,
 };
@@ -18,7 +14,7 @@ pub fn EstimateFormView(
     submit_label: String,
     onsubmit: EventHandler<Result<EstimateDraft, String>>,
 ) -> Element {
-    let mut customer_id = use_signal(|| {
+    let customer_id = use_signal(|| {
         initial
             .as_ref()
             .and_then(|value| value.estimate.customer_id)
@@ -52,10 +48,26 @@ pub fn EstimateFormView(
     });
 
     rsx! {
-        form {
-            class: "flex w-full max-w-5xl flex-col gap-6",
-            onsubmit: move |event| {
-                event.prevent_default();
+        DocumentForm {
+            doc_number,
+            customer_id,
+            contacts,
+            description,
+            products,
+            lines,
+            heading: "Estimate products",
+            line_description: "Attach products and quantities to this estimate.",
+            description_placeholder: "Add notes for this estimate",
+            submit_label,
+            action: rsx! {
+                ButtonLink {
+                    to: Route::IndexProducts {},
+                    variant: ButtonVariant::Secondary,
+                    class: "px-3 py-1.5 text-sm",
+                    "Manage products"
+                }
+            },
+            onsubmit: move |_| {
                 if doc_number().trim().is_empty() {
                     onsubmit.call(Err("Document number is required.".to_string()));
                     return;
@@ -82,56 +94,7 @@ pub fn EstimateFormView(
                                 .collect(),
                         }),
                     );
-            },
-            div { class: "grid gap-4 md:grid-cols-2",
-                FormInput {
-                    label: "Document number",
-                    name: "doc_number",
-                    required: true,
-                    value: doc_number,
-                }
-                div { class: "flex w-full flex-col gap-1",
-                    FormSelect::<i32> {
-                        label: "Customer",
-                        name: "customer_id",
-                        on_value_change: move |value| customer_id.set(value),
-                        SelectGroup { class: "w-full",
-                            SelectGroupLabel { "Select a customer" }
-                            for (index, contact) in contacts.into_iter().enumerate() {
-                                SelectOption::<i32> {
-                                    index,
-                                    value: contact.id,
-                                    text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
-                                    "{contact.first_name} {contact.last_name} ({contact.email})"
-                                }
-                            }
-                        }
-                    }
-                }
             }
-            FormTextarea {
-                label: "Description",
-                name: "description",
-                value: description,
-                placeholder: "Add notes for this estimate",
-                resize: "none",
-                class: "min-h-24 w-full",
-            }
-            ProductLineEditor {
-                products,
-                lines,
-                heading: "Estimate products",
-                description: "Attach products and quantities to this estimate.",
-                action: rsx! {
-                    crate::components::ButtonLink {
-                        to: Route::IndexProducts {},
-                        variant: crate::components::ButtonVariant::Secondary,
-                        class: "px-3 py-1.5 text-sm",
-                        "Manage products"
-                    }
-                },
-            }
-            crate::components::Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
         }
     }
 }

@@ -1,11 +1,9 @@
 use chrono::NaiveDateTime;
 use dioxus::prelude::*;
-use dioxus_primitives::select::{SelectGroup, SelectOption};
 
 use crate::Route;
-use crate::components::select::{FormSelect, SelectGroupLabel};
 use crate::components::{
-    ProductLineDraft, ProductLineEditor, datetime_input, input::FormInput, textarea::FormTextarea,
+    ButtonLink, ButtonVariant, DocumentForm, ProductLineDraft, datetime_input, input::FormInput,
 };
 use crate::models::{
     Contact, InvoiceDetails, InvoiceDraft, InvoiceForm, InvoiceProductForm, Product,
@@ -19,7 +17,7 @@ pub fn InvoiceFormView(
     submit_label: String,
     onsubmit: EventHandler<Result<InvoiceDraft, String>>,
 ) -> Element {
-    let mut customer_id = use_signal(|| initial.as_ref().map(|value| value.invoice.customer_id));
+    let customer_id = use_signal(|| initial.as_ref().map(|value| value.invoice.customer_id));
     let doc_number = use_signal(|| {
         initial
             .as_ref()
@@ -61,10 +59,27 @@ pub fn InvoiceFormView(
     });
 
     rsx! {
-        form {
-            class: "flex w-full max-w-5xl flex-col gap-6",
-            onsubmit: move |event| {
-                event.prevent_default();
+        DocumentForm {
+            doc_number,
+            customer_id,
+            contacts,
+            description,
+            products,
+            lines,
+            heading: "Invoice products",
+            line_description: "Attach products and quantities to this invoice.",
+            description_placeholder: "Add notes for this invoice",
+            submit_label,
+            customer_required: true,
+            action: rsx! {
+                ButtonLink {
+                    to: Route::IndexProducts {},
+                    variant: ButtonVariant::Secondary,
+                    class: "px-3 py-1.5 text-sm",
+                    "Manage products"
+                }
+            },
+            onsubmit: move |_| {
                 let parse_date = |value: &str| {
                     NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M")
                         .map_err(|_| "Enter a valid date and time.".to_string())
@@ -111,67 +126,19 @@ pub fn InvoiceFormView(
                         }),
                     );
             },
-            div { class: "grid gap-4 md:grid-cols-2",
-                FormInput {
-                    label: "Document number",
-                    name: "doc_number",
-                    required: true,
-                    value: doc_number,
-                }
-                FormSelect::<i32> {
-                    label: "Customer",
-                    name: "customer_id",
-                    required: true,
-                    on_value_change: move |value| customer_id.set(value),
-                    SelectGroup { class: "w-full",
-                        SelectGroupLabel { "Select a customer" }
-                        for (index, contact) in contacts.into_iter().enumerate() {
-                            SelectOption::<i32> {
-                                index,
-                                value: contact.id,
-                                text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
-                                "{contact.first_name} {contact.last_name} ({contact.email})"
-                            }
-                        }
-                    }
-                }
-                FormInput {
-                    label: "Order date",
-                    name: "order_date",
-                    r#type: "datetime-local",
-                    required: true,
-                    value: order_date,
-                }
-                FormInput {
-                    label: "Delivery date",
-                    name: "delivery_date",
-                    r#type: "datetime-local",
-                    value: delivery_date,
-                }
+            FormInput {
+                label: "Order date",
+                name: "order_date",
+                r#type: "datetime-local",
+                required: true,
+                value: order_date,
             }
-            FormTextarea {
-                label: "Description",
-                name: "description",
-                value: description,
-                placeholder: "Add notes for this invoice",
-                resize: "none",
-                class: "min-h-24 w-full",
+            FormInput {
+                label: "Delivery date",
+                name: "delivery_date",
+                r#type: "datetime-local",
+                value: delivery_date,
             }
-            ProductLineEditor {
-                products,
-                lines,
-                heading: "Invoice products",
-                description: "Attach products and quantities to this invoice.",
-                action: rsx! {
-                    crate::components::ButtonLink {
-                        to: Route::IndexProducts {},
-                        variant: crate::components::ButtonVariant::Secondary,
-                        class: "px-3 py-1.5 text-sm",
-                        "Manage products"
-                    }
-                },
-            }
-            crate::components::Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
         }
     }
 }

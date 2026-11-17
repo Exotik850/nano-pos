@@ -1,11 +1,7 @@
 use chrono::NaiveDateTime;
 use dioxus::prelude::*;
-use dioxus_primitives::select::SelectGroup;
 
-use crate::components::select::{FormSelect, SelectGroupLabel, SelectOption};
-use crate::components::{
-    ProductLineDraft, ProductLineEditor, datetime_input, input::FormInput, textarea::FormTextarea,
-};
+use crate::components::{DocumentForm, ProductLineDraft, datetime_input, input::FormInput};
 use crate::models::{Contact, CreditDetails, CreditDraft, CreditForm, CreditProductForm, Product};
 
 #[component]
@@ -16,7 +12,7 @@ pub fn CreditFormView(
     submit_label: String,
     onsubmit: EventHandler<Result<CreditDraft, String>>,
 ) -> Element {
-    let mut customer_id = use_signal(|| initial.as_ref().map(|value| value.credit.customer_id));
+    let customer_id = use_signal(|| initial.as_ref().map(|value| value.credit.customer_id));
     let doc_number = use_signal(|| {
         initial
             .as_ref()
@@ -52,10 +48,19 @@ pub fn CreditFormView(
     });
 
     rsx! {
-        form {
-            class: "flex w-full max-w-5xl flex-col gap-6",
-            onsubmit: move |event| {
-                event.prevent_default();
+        DocumentForm {
+            doc_number,
+            customer_id,
+            contacts,
+            description,
+            products,
+            lines,
+            heading: "Credit products",
+            line_description: "Attach products and quantities to this credit.",
+            description_placeholder: "Add notes for this credit",
+            submit_label,
+            customer_required: true,
+            onsubmit: move |_| {
                 let Ok(date) = NaiveDateTime::parse_from_str(&credit_date(), "%Y-%m-%dT%H:%M")
                 else {
                     onsubmit.call(Err("Enter a valid credit date and time.".to_string()));
@@ -93,54 +98,13 @@ pub fn CreditFormView(
                         }),
                     );
             },
-            div { class: "grid gap-4 md:grid-cols-2",
-                FormInput {
-                    label: "Document number",
-                    name: "doc_number",
-                    required: true,
-                    value: doc_number,
-                }
-                div { class: "flex w-full flex-col gap-1",
-                    FormSelect::<i32> {
-                        label: "Customer",
-                        name: "customer_id",
-                        on_value_change: move |value| customer_id.set(value),
-                        SelectGroup { class: "w-full",
-                            SelectGroupLabel { "Select a customer" }
-                            for (index, contact) in contacts.into_iter().enumerate() {
-                                SelectOption::<i32> {
-                                    index,
-                                    value: contact.id,
-                                    text_value: "{contact.first_name} {contact.last_name} ({contact.email})",
-                                    "{contact.first_name} {contact.last_name} ({contact.email})"
-                                }
-                            }
-                        }
-                    }
-                }
-                FormInput {
-                    label: "Credit date",
-                    name: "credit_date",
-                    r#type: "datetime-local",
-                    required: true,
-                    value: credit_date,
-                }
+            FormInput {
+                label: "Credit date",
+                name: "credit_date",
+                r#type: "datetime-local",
+                required: true,
+                value: credit_date,
             }
-            FormTextarea {
-                label: "Description",
-                name: "description",
-                value: description,
-                placeholder: "Add notes for this credit",
-                resize: "none",
-                class: "min-h-24 w-full",
-            }
-            ProductLineEditor {
-                products,
-                lines,
-                heading: "Credit products",
-                description: "Attach products and quantities to this credit.",
-            }
-            crate::components::Button { class: "self-center px-5 py-2.5", r#type: "submit", "{submit_label}" }
         }
     }
 }
