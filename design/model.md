@@ -79,7 +79,19 @@ nano-pos is meant to be a minimal implementation of a Point-of-Sale system for s
 - description?
 
 ## SalesReceipt
-todo!
+- customer id
+- user id
+- document number
+- description?
+- sales receipt date
+
+### SalesReceiptProduct
+- sales receipt id
+- product id
+- quantity
+- tax rate?
+- price?
+- description?
 
 ## Payment
 todo!

@@ -1,5 +1,33 @@
 // @generated automatically by Diesel CLI.
 diesel::table! {
+    sales_receipt (id) {
+        id -> Int4,
+        customer_id -> Int4,
+        user_id -> Int4,
+        #[max_length = 255]
+        doc_number -> Varchar,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
+        sales_receipt_date -> Timestamp,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    sales_receipt_product (id) {
+        id -> Int4,
+        sales_receipt_id -> Int4,
+        product_id -> Int4,
+        quantity -> Int4,
+        price -> Nullable<Int4>,
+        tax_rate -> Nullable<Float8>,
+        #[max_length = 3000]
+        description -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
     credit (id) {
         id -> Int4,
         customer_id -> Int4,
@@ -153,6 +181,10 @@ diesel::joinable!(credit -> contact (customer_id));
 diesel::joinable!(credit -> users (user_id));
 diesel::joinable!(credit_product -> credit (credit_id));
 diesel::joinable!(credit_product -> product (product_id));
+diesel::joinable!(sales_receipt -> contact (customer_id));
+diesel::joinable!(sales_receipt -> users (user_id));
+diesel::joinable!(sales_receipt_product -> sales_receipt (sales_receipt_id));
+diesel::joinable!(sales_receipt_product -> product (product_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     contact,
@@ -163,5 +195,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     invoice,
     invoice_product,
     product,
+    sales_receipt,
+    sales_receipt_product,
     users,
 );
