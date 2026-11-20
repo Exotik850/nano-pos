@@ -171,9 +171,9 @@ impl SessionCookieJar {
     }
 
     pub fn session(&self, db: &DbHandle) -> Result<Session, ServerFnError> {
-        let uid = self.user_id().ok_or_else(|| {
-            ServerFnError::Response("You must be signed in to access this resource.".into())
-        })?;
+        let uid = self
+            .user_id()
+            .or_unauthorized("You must be signed in to access this resource.")?;
         load_session(uid, db)
     }
 
@@ -186,10 +186,10 @@ impl SessionCookieJar {
 
     fn commit_response(&self) -> Result<(), ServerFnError> {
         let response = self.jar.clone().into_response();
+        let ctx = FullstackContext::current()
+            .ok_or_else(|| ServerFnError::Response("No active request context.".into()))?;
         for value in response.headers().get_all(SET_COOKIE).iter() {
-            FullstackContext::current()
-                .ok_or_else(|| ServerFnError::Response("No active request context.".into()))?
-                .add_response_header(SET_COOKIE, value.clone());
+            ctx.add_response_header(SET_COOKIE, value.clone());
         }
         Ok(())
     }
@@ -309,11 +309,7 @@ pub fn signup_impl(
                 email,
             })
             .get_result::<User>(&mut *conn)
-            .map_err(|e| {
-                ServerFnError::Response(format!(
-                    "Could not create user (username or email may already be taken): {e}"
-                ))
-            })?
+            .or_bad_request("Could not create user (username or email may already be taken).")?
     };
 
     let session = session_from_user(&user);
@@ -338,10 +334,10 @@ pub fn login_impl(
             .filter(users::username.eq(&username))
             .first::<User>(&mut *conn)
             .optional()
-            .map_err(|e| ServerFnError::Response(format!("Database error: {e}")))?
+            .or_internal_server_error("Database error")?
     };
 
-    let user = user.ok_or_else(|| ServerFnError::Response("Invalid credentials".into()))?;
+    let user = user.or_unauthorized("Invalid credentials")?;
     if !verify_password(password, &user.password_hash) {
         return Err(ServerFnError::Response("Invalid credentials".into()));
     }
@@ -359,10 +355,8 @@ fn load_session(uid: i32, db: &DbHandle) -> Result<Session, ServerFnError> {
         .filter(users::id.eq(uid))
         .first(&mut *conn)
         .optional()
-        .map_err(|e| ServerFnError::Response(format!("Database error: {e}")))?
-        .ok_or_else(|| {
-            ServerFnError::Response("You must be signed in to access this resource.".into())
-        })?;
+        .or_internal_server_error("Database error")?
+        .or_unauthorized("You must be signed in to access this resource.")?;
     Ok(session_from_user(&user))
 }
 
