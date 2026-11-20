@@ -40,10 +40,10 @@ fn SalesReceiptTableRow(
 #[component]
 pub fn IndexSalesReceipts() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let receipts = use_server_future(list_sales_receipts)?.suspend()?;
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let receipts_ready = receipts().context("Failed to get sales receipts")?;
-    let contacts_ready = contacts().context("Failed to get contacts")?;
+    let receipts = use_loader(list_sales_receipts)?;
+    let contacts = use_loader(list_contacts)?;
+    let receipts_ready = receipts();
+    let contacts_ready = contacts();
     let mut receipts = use_signal(|| receipts_ready.clone());
     if let Some(message) = error() {
         return Err(ServerFnError::Response(message).into());

@@ -12,14 +12,14 @@ pub fn EditSalesReceipt(id: i32) -> Element {
     let mut error = use_signal(|| None::<String>);
     let loading = use_signal(|| false);
     let receipt = use_server_future(move || get_sales_receipt(id))?.suspend()?;
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let products = use_server_future(list_products)?.suspend()?;
+    let contacts = use_loader(list_contacts)?;
+    let products = use_loader(list_products)?;
     let result = receipt();
     let load_error = result.as_ref().err().map(ToString::to_string);
     let initial = result.ok().flatten();
-    let found = initial.is_some();
-    let contacts = contacts().context("Failed to get contacts")?;
-    let products = products().context("Failed to get products")?;
+      let found = initial.is_some();
+      let contacts = contacts();
+    let products = products();
     let description = initial.as_ref().map_or_else(
         || "Update this sales receipt.".to_string(),
         |receipt| format!("Update sales receipt {}.", receipt.sales_receipt.doc_number),

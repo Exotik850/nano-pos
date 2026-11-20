@@ -36,10 +36,10 @@ fn CreditTableRow(credit: Credit, contacts: Contact, ondelete: EventHandler<i32>
 #[component]
 pub fn IndexCredits() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let credits = use_server_future(list_credits)?.suspend()?;
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let credits_ready = credits().context("Failed to get credits")?;
-    let contacts_ready = contacts().context("Failed to get contacts")?;
+    let credits = use_loader(list_credits)?;
+    let contacts = use_loader(list_contacts)?;
+    let credits_ready = credits();
+    let contacts_ready = contacts();
     let mut credits = use_signal(|| credits_ready.clone());
     if let Some(message) = error() {
         return Err(ServerFnError::Response(message).into());

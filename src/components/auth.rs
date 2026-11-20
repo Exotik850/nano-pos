@@ -38,7 +38,7 @@ pub fn AuthProvider() -> Element {
     // Return the session from the server future so the initial client render
     // uses the same value as SSR during hydration.
     let initial_session = use_server_future(current_user)?;
-    // let initial_session = use_server_future(current_user)?.suspend()?;
+    // let initial_session = use_loader(current_user)?;
     let session = use_signal(|| initial_session().transpose().ok().flatten().flatten());
 
     use_context_provider(|| AuthContext { session });

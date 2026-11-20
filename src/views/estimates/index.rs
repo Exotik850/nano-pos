@@ -40,10 +40,10 @@ fn EstimateTableRow(
 #[component]
 pub fn IndexEstimates() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let estimates = use_server_future(list_estimates)?.suspend()?;
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let estimates_ready = estimates().context("Failed to get estimates")?;
-    let contacts_ready = contacts().context("Failed to get contacts")?;
+    let estimates = use_loader(list_estimates)?;
+    let contacts = use_loader(list_contacts)?;
+    let estimates_ready = estimates();
+    let contacts_ready = contacts();
     let mut estimates = use_signal(|| estimates_ready.clone());
 
     if let Some(message) = error() {

@@ -12,10 +12,10 @@ pub fn NewInvoice() -> Element {
     let navigator = use_navigator();
     let mut error = use_signal(|| None::<String>);
     let loading = use_signal(|| false);
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let products = use_server_future(list_products)?.suspend()?;
-    let contacts = contacts().context("Failed to get contacts")?;
-    let products = products().context("Failed to get products")?;
+    let contacts = use_loader(list_contacts)?;
+    let products = use_loader(list_products)?;
+    let contacts = contacts();
+    let products = products();
 
     rsx! {
         FormPage {

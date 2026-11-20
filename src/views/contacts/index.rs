@@ -60,8 +60,8 @@ fn ContactTable(contacts: ReadSignal<Vec<Contact>>, ondelete: EventHandler<i32>)
 #[component]
 pub fn IndexContacts() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let contacts_ready = contacts().context("Failed to get contacts")?;
+    let contacts = use_loader(list_contacts)?;
+    let contacts_ready = contacts();
     let mut contacts = use_signal(|| contacts_ready.clone());
 
     if let Some(message) = error() {

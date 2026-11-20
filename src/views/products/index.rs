@@ -75,8 +75,8 @@ fn ProductTable(products: ReadSignal<Vec<Product>>, ondelete: EventHandler<i32>)
 #[component]
 pub fn IndexProducts() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let products = use_server_future(list_products)?.suspend()?;
-    let products_ready = products().context("Failed to get products")?;
+    let products = use_loader(list_products)?;
+    let products_ready = products();
     let mut prods = use_signal(|| products_ready.clone());
 
     if let Some(message) = error() {

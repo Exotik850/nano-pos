@@ -40,10 +40,10 @@ fn InvoiceTableRow(
 #[component]
 pub fn IndexInvoices() -> Element {
     let mut error = use_signal(|| None::<String>);
-    let invoices = use_server_future(list_invoices)?.suspend()?;
-    let contacts = use_server_future(list_contacts)?.suspend()?;
-    let invoices_ready = invoices().context("Failed to get invoices")?;
-    let contacts_ready = contacts().context("Failed to get contacts")?;
+    let invoices = use_loader(list_invoices)?;
+    let contacts = use_loader(list_contacts)?;
+    let invoices_ready = invoices();
+    let contacts_ready = contacts();
     let mut invoices = use_signal(|| invoices_ready.clone());
 
     if let Some(message) = error() {
